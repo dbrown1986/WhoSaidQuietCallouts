@@ -8,7 +8,7 @@
   ==============================================================-->
 
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
     <ProjectGuid>{C1A453F5-22B7-4D79-A92E-AFEE8897E1D9}</ProjectGuid>
     <OutputType>Library</OutputType>
