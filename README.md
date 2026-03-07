@@ -1,4 +1,16 @@
-# 🚔 Who Said Quiet Callouts (WSQ)
+# ⚠️ Content Advisory – Suicide Attempt Callout
+
+This mod pack includes one optional callout titled **“Suicide Attempt”**, which portrays a scenario involving self‑harm and crisis intervention.  
+It is **disabled by default** out of respect for all players.  
+You may enable it at your own discretion by setting `SuicideAttempt=true` in the `[SuicideCallout]` section of the `WhoSaidQuietCallouts.ini` file.  
+
+If you or someone you know struggles with thoughts of suicide or self‑harm, **please reach out for help**.  
+- In the U.S., call **988** (Suicide and Crisis Lifeline).  
+- Outside the U.S., visit [findahelpline.com](https://findahelpline.com), which provides international hotlines.
+
+---
+
+# 🚔 Who Said Quiet Callouts (WSQ)
 
 **Version:** 1.9.1 · Maintenance & Documentation Cleanup Build  
 **Release Date:** March 7 2026  
@@ -6,100 +18,89 @@
 
 ---
 
-## 📜 Overview
+## 📜 Overview
 Who Said Quiet Callouts (WSQ) is a modular, narrative‑driven callout pack for **LSPDFR** (Los Santos Police Department First Response) built around realism, AI depth, and seamless plugin interoperability.  
 
 Combining cinematic storytelling with professional police‑response logic, WSQ turns each dispatch into an evolving scenario shaped by choices, timing, and behavior AI states.
 
 ---
 
-## 🧩 Features
+## 🧩 Features
 
-### 🎮 Core Gameplay
-- **21 original callouts**, each crafted with unique AI behavior and branching outcomes.  
-- **Radiant AI Behavior Engine** 
-  - suspects shift between **Compliant**, **Fleeing**, and **Hostile** modes dynamically.  
-- **Narrative scripting** for immersive scenes and authentic dialogue.  
-- **Single Active Callout System** — prevents overlapping scenes for performance consistency.  
-- **Dynamic Dispatch Cooldown** – realistic random interval (30 – 300 seconds) between calls.  
-- **Manual Callout Selection** via **Callout Interface Menu** (v1.9+)  
-  - start, cancel, or review WSQ calls through menu interface.  
-- **Full integration support** for external LSPDFR plugins:
+### 🎮 Core Gameplay
+- **21 original callouts**, each crafted with unique AI behavior and branching outcomes.  
+- **Radiant AI Behavior Engine** dynamically selects between **Compliant**, **Fleeing**, and **Hostile** suspects.  
+- **Narrative scripting** for immersive, story‑driven encounters.  
+- **Single Active Callout System** — prevents overlapping scenes for stability.  
+- **Dynamic Dispatch Cooldown** – random interval (30 – 300 seconds) between calls.  
+- **Manual Callout Selection** via **Callout Interface Menu** (v1.9+) for full testing control.  
+- **Wide plug‑in compatibility** with external LSPDFR tools (see table below).
 
 | Integration | Function | Notes |
 |:--|:--|:--|
-| Stop The Ped (STP) | advanced suspect control | conflicts with Policing Redefined |
-| Ultimate Backup | backup and SWAT AI units | conflicts with Policing Redefined |
-| Policing Redefined (PR) | AI & pursuit overhaul | replaces STP and UB features |
-| CompuLite | records / citation integration | safe |
-| Grammar Police | dispatch and radio audio | safe |
-| Reports+ | enhanced incident reporting | safe |
-| LSPDFR Expanded | new agencies and code definitions | safe |
-| External Police Computer | extended MDT UI system | safe |
-| Callout Interface | in‑game UI + manual callout selection | safe |
+| Stop The Ped (STP) | suspect control system | ⚠ conflicts with Policing Redefined |
+| Ultimate Backup | tactical AI backup | ⚠ conflicts with Policing Redefined |
+| Policing Redefined (PR) | AI & pursuit overhaul | replaces STP / UB |
+| CompuLite | records & citation system | safe |
+| Grammar Police | dispatch & radio audio | safe |
+| Reports+ | enhanced incident summaries | safe |
+| LSPDFR Expanded | agency / penal‑code extensions | safe |
+| External Police Computer | advanced MDT UI | safe |
+| Callout Interface | UI + manual callout selection | safe |
 
 ---
 
-## 🔥 Callout Library _(v1.9.1)_
-| # | Name | Description |
+## 🔥 Callout Library (v1.9.1)
+*(All callouts listed below are enabled by default except Suicide Attempt.)*
+
+| # | Name | Description |
 |:--:|:--|:--|
-| 1 | Armed Robbery | Weapons drawn at store location — multi‑suspect standoff |
-| 2 | Pursuit Suspect | Ongoing vehicle pursuit — join and assist units |
-| 3 | Domestic Disturbance | Dispute with variable threat levels |
-| 4 | Suspicious Vehicle | Investigate parked vehicle, possible drug activity |
-| 5 | Kidnapping | Locate abducted subject — time‑critical response |
-| 6 | Gang Shootout | Multiple armed suspects engaged in open fire |
-| 7 | Burglary | B&E in‑progress with random flee/compliance states |
-| 8 | Animal Attack | Animal control / suspect protective actions |
-| 9 | Public Intoxication | Disorderly person — non‑lethal dialogue option |
-| 10 | Stolen Vehicle | Reported theft — track and recover |
-| 11 | Officer Down | Backup priority Code 3 — scene defense |
-| 12 | Road Rage | AI driver pursuit behavior simulation |
-| 13 | Barricaded Suspects | Tactical SWAT support situation |
-| 14 | Speeding Vehicle | Traffic enforcement / reckless operation |
-| 15 | Missing Person | Search pattern scenario with dialogue endings |
-| 16 | Drug Deal | Narcotics surveillance and takedown |
-| 17 | VIP Escort | Protective convoy mission |
-| 18 | Traffic Stop Assist | Code 2 backup for officer traffic stop |
-| 19 | Welfare Check | Knock‑and‑talk for well‑being confirmation |
-| 20 | Stolen Police Vehicle | Code 3 response for stolen marked unit |
-| 21 | **Suicide Attempt (Callout Special)** | Persuasion / medical response / helpline overlay |
+| 1 | Armed Robbery | Weapons‑drawn robbery scene. Multiple suspects. |
+| 2 | Pursuit Suspect | Join an active pursuit and assist units. |
+| 3 | Domestic Disturbance | Verbal / physical dispute with variable risk. |
+| 4 | Suspicious Vehicle | Investigate a suspicious car parked unattended. |
+| 5 | Kidnapping | Abduction response — time sensitive. |
+| 6 | Gang Shootout | Area gunfight; multiple armed suspects. |
+| 7 | Burglary | Break‑in in‑progress. Compliant / Flee / Hostile. |
+| 8 | Animal Attack | Animal control or self‑defense incident. |
+| 9 | Public Intoxication | Non‑lethal dialogue or arrest option. |
+| 10 | Stolen Vehicle | Locate and recover reported theft. |
+| 11 | Officer Down | Priority Code 3 backup situation. |
+| 12 | Road Rage | Vehicle aggression or pursuit. |
+| 13 | Barricaded Suspects | SWAT negotiation and entry scenario. |
+| 14 | Speeding Vehicle | Traffic enforcement / reckless driver. |
+| 15 | Missing Person | Search and rescue with dialogue closure. |
+| 16 | Drug Deal | Narcotics surveillance takedown. |
+| 17 | VIP Escort | Vehicle protection and route security. |
+| 18 | Traffic Stop Assist | Code 2 backup on traffic stop. |
+| 19 | Welfare Check | Residential welfare concern. |
+| 20 | Stolen Police Vehicle | Code 3 response — stolen patrol unit. |
+| 21 | 💬 **Suicide Attempt** | Optional sensitive scenario disabled by default — enable manually in INI. |
 
 ---
 
-## ⚙️ Compiling WSQ from Source
+## ⚙️ Compiling From Source
+### Requirements
+- Visual Studio 2019 or later  
+- .NET Framework 4.8 SDK  
+- RAGE Plugin Hook SDK (LSPDFR dependencies)  
 
-### 🧰 Requirements
-- **Microsoft Visual Studio 2019** or later  
-- **.NET Framework 4.8 SDK**  
-- **RAGE Plugin Hook SDK** (`LSPD_First_Response.dll` included in your LSPDFR install)  
-
-### 🛠️ Steps
-1. Clone or extract this repository into your projects directory.  
-2. Open `WhoSaidQuietCallouts.sln` in Visual Studio.  
-3. In **Project > Add Reference**, link:
-   - `RagePluginHook.dll`  
-   - `LSPD_First_Response.dll`  
-4. Ensure build target is: `.NET Framework 4.8`, x64.  
-5. Press **Build > Build Solution** ( `Ctrl + Shift + B` ).  
-6. Output:  
-   `bin/Release/WhoSaidQuietCallouts.dll`  
-
-Place that DLL and the INI/Integration folders into your:  
-`Grand Theft Auto V/Plugins/LSPDFR/` directory.
+### Steps
+1️⃣ Clone this repository or download ZIP.  
+2️⃣ Open `WhoSaidQuietCallouts.sln` in Visual Studio.  
+3️⃣ Add references to: `RagePluginHook.dll`, `LSPD_First_Response.dll`.  
+4️⃣ Set build target → `.NET Framework 4.8` ( x64 ).  
+5️⃣ Build Solution → compile to `bin/Release/WhoSaidQuietCallouts.dll`.  
+6️⃣ Copy the DLL + INI to `GTA V/Plugins/LSPDFR/`.  
 
 ---
 
-## 💾 Installation Instructions
-
-1. **Download** the compiled WSQ package or build it yourself.  
-2. **Copy**:
-   - `WhoSaidQuietCallouts.dll`  
-   - `WhoSaidQuietCallouts.ini`  
-   into `GTA V/Plugins/LSPDFR/`.  
-3. Optional Integrations: install corresponding mods (STP, UB, CompuLite, etc.).  
-4. Open `WhoSaidQuietCallouts.ini` and toggle desired callouts/plugins:
+## 💾 Installation Instructions
+1. Download or build WSQ.  
+2. Place files into `Grand Theft Auto V/Plugins/LSPDFR/`.  
+3. Enable desired integrations inside `WhoSaidQuietCallouts.ini`.  
+4. Run **RAGE Plugin Hook**, verify console logs success.  
+5. To enable the optional Suicide Attempt callout, edit:
    ```ini
-   StopThePed=true
-   UltimateBackup=false
-   GrammarPolice=true
+   [SuicideCallout]
+   SuicideAttempt=true
