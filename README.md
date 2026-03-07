@@ -124,8 +124,9 @@ to run the mods in your game session.
 
 ## 🧠 Gameplay Tips  
 - Adjust callout frequency via cooldown range in INI.  
-- Avoid running STP/UB with Policing Redefined simultaneously.  
-- Launch specific calls through F10 (Callout Interface).  
+- Avoid running StopThePed & Ultimate Backup with Policing Redefined simultaneously.
+- If you're running Policing Redefined, you'll likely want to use Reports+ or ExternalPoliceComputer, as Compulite is not supported.
+- You can launch specific calls through F10 (Callout Interface).  
 - Use `LogLevel=3` for debug testing.  
 
 ---
