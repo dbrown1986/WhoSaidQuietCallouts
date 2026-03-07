@@ -1,0 +1,218 @@
+using System;
+using System.Collections.Generic;
+using Rage;
+using LSPD_First_Response.Mod.API;
+using LSPD_First_Response.Mod.Callouts;
+
+namespace WhoSaidQuietCallouts.Callouts
+{
+    /// <summary>
+    /// Kidnapping.cs
+    /// Version: 1.9.1 (Maintenance & Documentation Cleanup Build)
+    /// Date: March 7, 2026
+    /// Author: Who Said Quiet Team
+    /// 
+    /// Description:
+    ///  A civilian has been reported abducted and forced into a vehicle.
+    ///  Player officer must locate the suspect vehicle, pursue, and safely recover the victim.
+    ///  Scenario can escalate into a pursuit or hostage rescue.
+    /// </summary>
+    [CalloutInfo("Kidnapping", CalloutProbability.Medium)]
+    public class Kidnapping : Callout
+    {
+        private Vector3 _spawnPoint;
+        private Vehicle _suspectVehicle;
+        private Ped _suspect;
+        private Ped _victim;
+        private Blip _vehicleBlip;
+
+        private bool _sceneActive;
+        private bool _pursuitStarted;
+        private bool _callHandled;
+        private LHandle _pursuit;
+        private Random _rng = new Random();
+
+        public override bool OnBeforeCalloutDisplayed()
+        {
+            try
+            {
+                Vector3 playerPos = Game.LocalPlayer.Character.Position;
+                _spawnPoint = World.GetNextPositionOnStreet(playerPos.Around(600f));
+
+                CalloutMessage = "Possible Kidnapping Reported – Victim Forced into Vehicle";
+                CalloutPosition = _spawnPoint;
+                ShowCalloutAreaBlipBeforeAccepting(_spawnPoint, 80f);
+
+                Functions.PlayScannerAudioUsingPosition("CITIZENS_REPORT KIDNAPPING IN_OR_ON_POSITION", _spawnPoint);
+                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911", "Dispatch", "~r~Kidnapping", "Suspect vehicle seen fleeing from the scene.");
+
+                return base.OnBeforeCalloutDisplayed();
+            }
+            catch (Exception ex)
+            {
+                Game.LogTrivial($"[WSQ][Kidnapping] Exception in OnBeforeCalloutDisplayed: {ex.Message}");
+                return false;
+            }
+        }
+
+        public override bool OnCalloutAccepted()
+        {
+            Game.LogTrivial("[WSQ][Kidnapping] Callout accepted.");
+
+            try
+            {
+                // Create suspect vehicle
+                _suspectVehicle = new Vehicle("SPEEDO", _spawnPoint)
+                {
+                    IsPersistent = true
+                };
+
+                // Create suspect (driver)
+                _suspect = _suspectVehicle.CreateRandomDriver();
+                _suspect.BlockPermanentEvents = false;
+                _suspect.IsPersistent = true;
+
+                // Create victim (passenger)
+                _victim = new Ped("A_F_Y_EastSA_02", _spawnPoint.Around(1.5f), 0f)
+                {
+                    IsPersistent = true
+                };
+                _victim.BlockPermanentEvents = true;
+                _victim.WarpIntoVehicle(_suspectVehicle, 2); // back seat
+                _victim.Tasks.PlayAnimation("random@arrests", "idle_c", 1f, AnimationFlags.Loop);
+
+                // Create blip and scene setup
+                _vehicleBlip = _suspectVehicle.AttachBlip();
+                _vehicleBlip.Color = System.Drawing.Color.Red;
+                _vehicleBlip.Name = "Kidnapping Suspect";
+                _vehicleBlip.IsFriendly = false;
+
+                Game.DisplayHelp("Locate and follow the ~r~suspect vehicle~w~. Await further instructions or initiate a traffic stop.");
+                Functions.PlayScannerAudio("UNITS_RESPOND_CODE_3");
+
+                _sceneActive = true;
+            }
+            catch (Exception ex)
+            {
+                Game.LogTrivial($"[WSQ][Kidnapping] Exception in OnCalloutAccepted: {ex}");
+                End();
+            }
+
+            return base.OnCalloutAccepted();
+        }
+
+        public override void Process()
+        {
+            base.Process();
+
+            if (!_sceneActive || _callHandled) return;
+
+            float distance = Game.LocalPlayer.Character.DistanceTo(_spawnPoint);
+
+            // Player close enough to engage
+            if (!_pursuitStarted && distance < 50f)
+            {
+                int behavior = _rng.Next(0, 100);
+                if (behavior < 60)
+                {
+                    // Traffic stop scenario
+                    Game.DisplaySubtitle("~y~The suspect vehicle is slowing down. Prepare for a felony stop.");
+                    StartStopScenario();
+                }
+                else
+                {
+                    // Pursuit escalation
+                    StartPursuitScenario();
+                }
+            }
+
+            // If pursuit ended
+            if (_pursuitStarted && !Functions.IsPursuitStillRunning(_pursuit))
+            {
+                HandleSceneConclusion();
+            }
+
+            // If player leaves area
+            if (Game.LocalPlayer.Character.DistanceTo(_spawnPoint) > 800f)
+            {
+                Game.DisplayHelp("You left the area. Dispatch is reassigning this call.");
+                End();
+            }
+        }
+
+        private void StartStopScenario()
+        {
+            try
+            {
+                Game.LogTrivial("[WSQ][Kidnapping] Attempting felony stop scenario.");
+                _suspect.Tasks.LeaveVehicle(_suspectVehicle, LeaveVehicleFlags.LeaveDoorOpen);
+                GameFiber.Wait(1500);
+                _suspect.Tasks.PutHandsUp(-1, Game.LocalPlayer.Character);
+                _victim.Tasks.LeaveVehicle(_suspectVehicle, LeaveVehicleFlags.LeaveDoorOpen);
+                _victim.Tasks.Flee(Game.LocalPlayer.Character.Position);
+                Game.DisplaySubtitle("~b~Arrest the suspect and secure the victim.");
+            }
+            catch (Exception ex)
+            {
+                Game.LogTrivial("[WSQ][Kidnapping] StartStopScenario exception: " + ex);
+            }
+        }
+
+        private void StartPursuitScenario()
+        {
+            try
+            {
+                Game.LogTrivial("[WSQ][Kidnapping] Suspect has fled the scene – pursuit started!");
+                _pursuit = Functions.CreatePursuit();
+                Functions.AddPedToPursuit(_pursuit, _suspect);
+                Functions.SetPursuitIsActiveForPlayer(_pursuit, true);
+                _pursuitStarted = true;
+                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911", "Dispatch", "~r~Kidnapping Pursuit", "Suspect is fleeing with victim! Use caution.");
+                Functions.PlayScannerAudio("WE_HAVE A_SUSPECT_FLEEING_CRIME_SCENE");
+            }
+            catch (Exception ex)
+            {
+                Game.LogTrivial("[WSQ][Kidnapping] StartPursuitScenario exception: " + ex);
+            }
+        }
+
+        private void HandleSceneConclusion()
+        {
+            try
+            {
+                Game.DisplaySubtitle("~g~Kidnapping suspect stopped. Secure the victim and clear the call.");
+                Functions.PlayScannerAudio("CODE_4_ADAM COPY_THAT");
+            }
+            catch (Exception ex)
+            {
+                Game.LogTrivial("[WSQ][Kidnapping] HandleSceneConclusion exception: " + ex.Message);
+            }
+
+            _callHandled = true;
+            End();
+        }
+
+        public override void End()
+        {
+            base.End();
+            Game.LogTrivial("[WSQ][Kidnapping] Cleaning up scene entities.");
+
+            try
+            {
+                if (_vehicleBlip && _vehicleBlip.Exists()) _vehicleBlip.Delete();
+
+                if (_suspect && _suspect.Exists()) _suspect.Dismiss();
+                if (_victim && _victim.Exists()) _victim.Dismiss();
+                if (_suspectVehicle && _suspectVehicle.Exists()) _suspectVehicle.Dismiss();
+            }
+            catch (Exception ex)
+            {
+                Game.LogTrivial("[WSQ][Kidnapping] Cleanup exception: " + ex.Message);
+            }
+
+            _sceneActive = false;
+            _callHandled = true;
+            Game.DisplayNotification("CHAR_POLICE", "CHAR_POLICE", "Dispatch", "Callout Completed", "Kidnapping call handled and scene secure.");
+        }
+    }
+}
