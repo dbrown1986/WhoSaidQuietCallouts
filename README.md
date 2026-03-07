@@ -92,17 +92,8 @@ By blending cinematic scenarios with advanced behavior logic, WSQ turns each
 ### 🛠️ Steps  
 1. Clone or extract this repository.  
 2. Open `WhoSaidQuietCallouts.sln` in Visual Studio.  
-3. Add references:  
-   - `RagePluginHook.dll`  
-   - `LSPD_First_Response.dll`
-   - `UltimateBackup.dll`
-   - `StopThePed.dll`
-   - `ReportsPlus.dll`
-   - `CompuLite.dll`
-   - `GrammarPolice.dll`
-   - `PolicingRedefined.dll`
-   - `LSPDFR_Expanded.dll`
-   - `CalloutInterface.dll`
+3. Copy reference DLL's to source directory:  
+   - `RagePluginHook.dll` - `LSPD_First_Response.dll` - `UltimateBackup.dll` - `StopThePed.dll` - `ReportsPlus.dll` - `CompuLite.dll` - `GrammarPolice.dll` - `PolicingRedefined.dll` - `LSPDFR_Expanded.dll` - `CalloutInterface.dll`
 5. Build solution (`Ctrl+Shift+B`).  
 6. Copy `WhoSaidQuietCallouts.dll` and `WhoSaidQuietCallouts.ini` to `GTA V/Plugins/LSPDFR`.  
 
