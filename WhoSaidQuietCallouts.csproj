@@ -3,7 +3,7 @@
   <!--==============================================================
       WHO SAID QUIET CALLOUTS
       Version: 1.9.1-d  (March 7, 2026)
-      Visual Studio 2022 – Full Reference Template
+      Visual Studio 2022 – Relative Reference Template
       Target Framework: .NET Framework 4.8 (x64)
   ==============================================================-->
 
@@ -42,11 +42,11 @@
   <!-- =================== CORE GAME REFERENCES =================== -->
   <ItemGroup>
     <Reference Include="RagePluginHook">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Grand Theft Auto V\Plugins\RagePluginHook.dll</HintPath>
+      <HintPath>.\RagePluginHook.dll</HintPath>
     </Reference>
 
     <Reference Include="LSPD_First_Response">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Grand Theft Auto V\Plugins\LSPDFR\LSPD_First_Response.dll</HintPath>
+      <HintPath>.\LSPD_First_Response.dll</HintPath>
     </Reference>
 
     <!-- .NET Base Libraries -->
@@ -61,49 +61,49 @@
   <ItemGroup>
     <!-- 1. Ultimate Backup -->
     <Reference Include="UltimateBackup">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Grand Theft Auto V\Plugins\LSPDFR\UltimateBackup\UltimateBackup.dll</HintPath>
+      <HintPath>.\UltimateBackup.dll</HintPath>
       <Private>false</Private>
     </Reference>
 
     <!-- 2. Stop The Ped -->
     <Reference Include="StopThePed">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Grand Theft Auto V\Plugins\LSPDFR\StopThePed\StopThePed.dll</HintPath>
+      <HintPath>.\StopThePed.dll</HintPath>
       <Private>false</Private>
     </Reference>
 
     <!-- 3. Reports Plus -->
     <Reference Include="ReportsPlus">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Grand Theft Auto V\Plugins\LSPDFR\ReportsPlus\ReportsPlus.dll</HintPath>
+      <HintPath>.\ReportsPlus.dll</HintPath>
       <Private>false</Private>
     </Reference>
 
     <!-- 4. CompuLite -->
     <Reference Include="CompuLite">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Grand Theft Auto V\Plugins\LSPDFR\CompuLite\CompuLite.dll</HintPath>
+      <HintPath>.\CompuLite.dll</HintPath>
       <Private>false</Private>
     </Reference>
 
     <!-- 5. Grammar Police -->
     <Reference Include="GrammarPolice">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Grand Theft Auto V\Plugins\LSPDFR\GrammarPolice\GrammarPolice.dll</HintPath>
+      <HintPath>.\GrammarPolice.dll</HintPath>
       <Private>false</Private>
     </Reference>
 
     <!-- 6. Policing Redefined -->
     <Reference Include="PolicingRedefined">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Grand Theft Auto V\Plugins\LSPDFR\PolicingRedefined\PolicingRedefined.dll</HintPath>
+      <HintPath>.\PolicingRedefined.dll</HintPath>
       <Private>false</Private>
     </Reference>
 
     <!-- 7. LSPDFR Expanded -->
     <Reference Include="LSPDFR_Expanded">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Grand Theft Auto V\Plugins\LSPDFR\LSPDFR_Expanded\LSPDFR_Expanded.dll</HintPath>
+      <HintPath>.\LSPDFR_Expanded.dll</HintPath>
       <Private>false</Private>
     </Reference>
 
     <!-- 8. Callout Interface -->
     <Reference Include="CalloutInterface">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Grand Theft Auto V\Plugins\LSPDFR\CalloutInterface\CalloutInterface.dll</HintPath>
+      <HintPath>.\CalloutInterface.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
