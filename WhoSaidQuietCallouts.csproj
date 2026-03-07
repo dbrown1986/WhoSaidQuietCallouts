@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ProjectGuid>{28F9B38E-94D8-4963-AE2B-4A5BECE2687F}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>WhoSaidQuietCallouts</RootNamespace>
+    <AssemblyName>WhoSaidQuietCallouts</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+    <LangVersion>latest</LangVersion>
+    <PlatformTarget>x64</PlatformTarget>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <Configurations>Debug;Release</Configurations>
+    <Deterministic>true</Deterministic>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="RagePluginHook">
+      <HintPath>$(GTAFolder)\Plugins\RagePluginHook.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="LSPD_First_Response">
+      <HintPath>$(GTAFolder)\Plugins\LSPDFR\LSPD_First_Response.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Include\**\*.cs" />
+    <Compile Include="Callouts\**\*.cs" />
+    <Compile Include="Integration\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="WhoSaidQuietCallouts.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="Build">
+    <!-- Automatically copy the compiled DLL and INI file to LSPDFR plugins folder after build -->
+    <Copy SourceFiles="$(OutputPath)\WhoSaidQuietCallouts.dll"
+          DestinationFolder="$(GTAFolder)\Plugins\LSPDFR\" 
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="WhoSaidQuietCallouts.ini"
+          DestinationFolder="$(GTAFolder)\Plugins\LSPDFR\" 
+          SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>
