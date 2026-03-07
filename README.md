@@ -155,6 +155,6 @@ Redistribution with credit only · No commercial use.
 
 ## 🪟 Platform Warning (Windows Only)
 This project is **released and supported for Windows only**.  
-Running under emulation or compatibility layers such as **Wine, Proton, or Crossover on Linux or macOS** is **unsupported**.  
+If you are running WSQ under emulation or compatibility layers such as **Wine, Proton, or Crossover on Linux or macOS** this is **unsupported**.
 Use of third‑party wrappers may cause instability or data loss and is done **solely at the user’s own risk**.  
 No technical support or issue tracking is offered for non‑Windows environments.  
