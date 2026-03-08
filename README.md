@@ -10,7 +10,7 @@ If you or someone you know struggles with thoughts of suicide or self‑harm, **
 
 ---
 
-![Build Failing](https://img.shields.io/badge/Windows%20Build-failing-red?logo=windows&style=for-the-badge)
+![Windows Build](https://github.com/dbrown1986/WhoSaidQuietCallouts/actions/workflows/dotnet.yml/badge.svg?branch=main)
 
 ---
 
