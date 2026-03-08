@@ -8,7 +8,7 @@ namespace WhoSaidQuietCallouts.Callouts
 {
     /// <summary>
     /// PublicIntoxication.cs
-    /// Version: 1.9.1 (Maintenance & Polished Behavior Build)
+    /// Version: 0.9.1 Alpha (Maintenance & Polished Behavior Build)
     /// Date: March 7, 2026
     /// Author: Who Said Quiet Team
     ///
