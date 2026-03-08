@@ -11,6 +11,7 @@ If you or someone you know struggles with thoughts of suicide or self‑harm, **
 ---
 
 ![Windows Build](https://github.com/dbrown1986/WhoSaidQuietCallouts/actions/workflows/dotnet.yml/badge.svg?branch=main)
+This plugin is in early development at the moment, not ready for production. Please keep an eye on this badge for status.
 
 ---
 
