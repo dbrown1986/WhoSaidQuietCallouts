@@ -8,7 +8,7 @@ namespace WhoSaidQuietCallouts.Callouts
 {
     /// <summary>
     /// DomesticDisturbance.cs
-    /// Version: 1.9.1 (Maintenance & Documentation Cleanup Build)
+    /// Version: 0.9.1 Alpha (Maintenance & Documentation Cleanup Build)
     /// Date: March 7, 2026
     /// Author: Who Said Quiet Team
     /// 
