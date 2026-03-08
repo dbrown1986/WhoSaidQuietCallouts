@@ -18,7 +18,7 @@ Please keep an eye on this badge for status.
 
 # 🚔 Who Said Quiet Callouts (WSQ)  
 
-**Version:** 1.9.1 · Maintenance & Documentation Cleanup Build  
+**Version:** 0.9.1 Alpha · Maintenance & Documentation Cleanup Build  
 **Release Date:** March 7 2026  
 **Engine:** RAGE Plugin Hook · LSPDFR 0.4.9 Compatible  
 
@@ -59,7 +59,7 @@ By blending cinematic scenarios with advanced behavior logic, WSQ turns each
 
 ---
 
-## 🔥 Callout Library (v1.9.1)
+## 🔥 Callout Library (v0.9.1 Alpha)
 *(All callouts enabled by default except Suicide Attempt.)*  
 
 | # | Name | Description |
@@ -130,7 +130,7 @@ to run the mods in your game session.
 
 ## 🧾 Changelog Summary  
 Full history available in [CHANGELOG.md](Docs/CHANGELOG.md).  
-**Latest:** v1.9.1 — Maintenance & Documentation Cleanup (Build 03/07/2026).  
+**Latest:** v0.9.1 Alpha — Maintenance & Documentation Cleanup (Build 03/07/2026).  
 
 ---
 
