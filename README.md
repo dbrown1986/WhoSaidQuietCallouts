@@ -10,6 +10,10 @@ If you or someone you know struggles with thoughts of suicide or self‑harm, **
 
 ---
 
+![Build Failing](https://img.shields.io/badge/Windows%20Build-failing-red?logo=windows&style=for-the-badge)
+
+---
+
 # 🚔 Who Said Quiet Callouts (WSQ)  
 
 **Version:** 1.9.1 · Maintenance & Documentation Cleanup Build  
