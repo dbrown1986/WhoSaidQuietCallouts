@@ -1,4 +1,4 @@
-![Windows Build](https://github.com/dbrown1986/WhoSaidQuietCallouts/actions/workflows/windows-build.yml/badge.svg?branch=main)<br>
+![Windows Build](https://github.com/dbrown1986/WhoSaidQuietCallouts/actions/workflows/windows-build.yml/badge.svg?branch=master)<br>
 
 # ⚠️ Content Advisory – Suicide Attempt Callout  
 
