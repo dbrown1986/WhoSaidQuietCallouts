@@ -6,7 +6,7 @@ namespace WhoSaidQuietCallouts.Core
 {
     /// <summary>
     /// WSQSettings.cs
-    /// Version: 1.9.1 (Maintenance & Configuration Build)
+    /// Version: 0.9.1 Alpha (Maintenance & Configuration Build)
     /// Date: March 7, 2026
     /// Author: Who Said Quiet Team
     ///
