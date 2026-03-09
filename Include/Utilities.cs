@@ -7,7 +7,7 @@ namespace WhoSaidQuietCallouts.Core
 {
     /// <summary>
     /// Utilities.cs
-    /// Version: 1.9.1 (Core Utility Module)
+    /// Version: 0.9.1 Alpha (Core Utility Module)
     /// Date: March 7, 2026
     /// Author: Who Said Quiet Team
     ///
