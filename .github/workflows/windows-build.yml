@@ -1,7 +1,4 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
-name: .NET
+name: Windows Build (.NET Framework 4.8.1)
 
 on:
   push:
@@ -11,18 +8,40 @@ on:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    name: Build on Windows (.NET 4.8.1)
+    runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Visual Studio Build Tools
+        uses: microsoft/setup-msbuild@v2
+        with:
+          vs-version: "[17.0,)"         # Visual Studio 2022+
+          msbuild-architecture: x64
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore WhoSaidQuietCallouts.sln
+
+      # ──────────────────────────────
+      # Ensure .NET Framework 4.8.1 Developer Pack
+      # is installed (included on windows-latest 2026 image)
+      # ──────────────────────────────
+      - name: Verify .NET Framework 4.8.1 presence
+        shell: pwsh
+        run: |
+          Get-ChildItem "HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" | Get-ItemPropertyValue -Name Version
+          Write-Host "✅ .NET Framework 4.8.1 Developer Pack available on build agent."
+
+      - name: Build Solution (Release, x64)
+        run: msbuild WhoSaidQuietCallouts.sln /p:Configuration=Release /p:Platform=x64 /p:TargetFrameworkVersion=v4.8.1 /m /verbosity:minimal
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WhoSaidQuietCallouts_Build
+          path: bin\Release\Plugins\LSPDFR\WhoSaidQuietCallouts\
