@@ -2,6 +2,7 @@ using System;
 using Rage;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
+using WhoSaidQuietCallouts;
 
 namespace WhoSaidQuietCallouts.Callouts
 {
@@ -16,7 +17,7 @@ namespace WhoSaidQuietCallouts.Callouts
     ///  intercepting, and apprehending the fleeing suspect vehicle before it escapes the area.
     /// </summary>
     [CalloutInfo("Pursuit Suspect", CalloutProbability.High)]
-    public class PursuitSuspect : Callout
+    public class PursuitSuspect : WSQCalloutBase
     {
         private Vehicle _suspectVehicle;
         private Ped _suspect;
@@ -115,7 +116,7 @@ namespace WhoSaidQuietCallouts.Callouts
                 _pursuitEnded = true;
                 Game.DisplaySubtitle("~g~Pursuit concluded. Scene secure or suspect in custody.");
                 Functions.PlayScannerAudio("CODE_4_ADAM COPY_THAT");
-                End();
+                PlayerControlledEnd();
             }
             catch (Exception ex)
             {

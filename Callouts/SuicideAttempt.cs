@@ -2,206 +2,196 @@ using System;
 using Rage;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
+using WhoSaidQuietCallouts.Core;
+using WhoSaidQuietCallouts;
 
 namespace WhoSaidQuietCallouts.Callouts
 {
-    /// <summary>
-    /// SuicideAttempt.cs
-    /// Version: 0.9.1 Alpha (Maintenance & Documentation Cleanup Build)
-    /// Date: March 7, 2026
-    /// Author: Who Said Quiet Team
-    ///
-    /// Description:
-    ///  Respond to a suicidal subject. Officers must locate the individual,
-    ///  assess their condition, and attempt peaceful negotiation.
-    ///  Escalations may occur if the subject becomes violent or flees.
-    /// </summary>
-    [CalloutInfo("Suicide Attempt", CalloutProbability.Medium)]
-    public class SuicideAttempt : Callout
+    [CalloutInfo("Suicide Attempt", CalloutProbability.Low)]
+    public class SuicideAttempt : WSQCalloutBase
     {
-        private Vector3 _sceneLocation;
         private Ped _subject;
         private Blip _sceneBlip;
-        private bool _sceneActive;
-        private bool _callHandled;
-        private bool _armed;
+        private Vector3 _spawnPoint;
+
+        private bool _sceneEnded;
         private bool _hostile;
-        private Random _rng = new Random();
+        private bool _negotiationActive;
+
+        private LHandle _pursuit;
+        private bool _pursuitActive;   // ✅ added flag to fix CS0103
 
         public override bool OnBeforeCalloutDisplayed()
         {
             try
             {
-                Vector3 player = Game.LocalPlayer.Character.Position;
-                _sceneLocation = World.GetNextPositionOnStreet(player.Around(800f));
-
-                CalloutPosition = _sceneLocation;
-                CalloutMessage = "Attempted Suicide Reported";
-                ShowCalloutAreaBlipBeforeAccepting(_sceneLocation, 70f);
-
-                Functions.PlayScannerAudioUsingPosition("CITIZENS_REPORT SUICIDE_ATTEMPT IN_OR_ON_POSITION", _sceneLocation);
-                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911", "Dispatch", "~r~Suicide Attempt", "Possible suicidal individual, respond Code 2 and attempt verbal intervention.");
-                return base.OnBeforeCalloutDisplayed();
+                _spawnPoint = World.GetNextPositionOnStreet(Game.LocalPlayer.Character.Position.Around(450f));
+                ShowCalloutAreaBlipBeforeAccepting(_spawnPoint, 55f);
+                CalloutMessage = "~r~Possible Suicide Attempt~s~ reported.";
+                CalloutPosition = _spawnPoint;
+                CalloutAdvisory = "Caller reports a subject threatening self‑harm.";
+                Functions.PlayScannerAudioUsingPosition("CITIZENS_REPORT SUICIDE_ATTEMPT IN_OR_ON_POSITION", _spawnPoint);
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][SuicideAttempt] OnBeforeCalloutDisplayed Exception: " + ex);
-                return false;
+                Game.LogTrivial("[WSQ][SuicideAttempt] OnBeforeCalloutDisplayed Exception: " + ex.Message);
             }
+            return base.OnBeforeCalloutDisplayed();
         }
 
         public override bool OnCalloutAccepted()
         {
-            Game.LogTrivial("[WSQ][SuicideAttempt] Callout accepted.");
             try
             {
-                _subject = new Ped("A_M_Y_Business_01", _sceneLocation.Around(1.5f), _rng.Next(0, 359))
-                {
-                    IsPersistent = true,
-                    BlockPermanentEvents = false
-                };
-
-                int armChance = _rng.Next(0, 100);
-                _armed = armChance > 65; // 35% chance armed
-
-                if (_armed)
-                {
-                    _subject.Inventory.GiveNewWeapon("WEAPON_PISTOL", 20, true);
-                }
-
-                _sceneBlip = new Blip(_sceneLocation, 40f)
+                Game.LogTrivial("[WSQ][SuicideAttempt] Callout accepted.");
+                _sceneBlip = new Blip(_spawnPoint, 40f)
                 {
                     Color = System.Drawing.Color.Red,
-                    Name = "Suicidal Subject",
-                    Alpha = 0.7f
+                    Name = "Suicide Attempt Location"
                 };
+                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911", "~b~Dispatch~s~",
+                    "~r~Suicide Attempt", "Respond Code 2 and attempt to negotiate with the subject.");
 
-                _sceneActive = true;
-                Game.DisplayHelp("Respond to the ~r~suicidal subject~w~. Approach calmly and attempt negotiation.");
-                Functions.PlayScannerAudio("UNITS_RESPOND_CODE_2");
+                Functions.PlayScannerAudio("RESPOND_CODE_2");
+                GameFiber.StartNew(CalloutLogic);
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][SuicideAttempt] OnCalloutAccepted Exception: " + ex);
-                End();
+                Game.LogTrivial("[WSQ][SuicideAttempt] OnCalloutAccepted Exception: " + ex.Message);
             }
 
             return base.OnCalloutAccepted();
         }
 
-        public override void Process()
+        private void CalloutLogic()
         {
-            base.Process();
-            if (!_sceneActive || _callHandled) return;
-            if (!_subject || !_subject.Exists()) return;
-
-            float dist = Game.LocalPlayer.Character.DistanceTo(_subject.Position);
-            if (dist < 20f)
+            try
             {
-                // Determine behavior outcome
-                int behavior = _rng.Next(0, 100);
+                _subject = new Ped(_spawnPoint);
+                if (!_subject.Exists()) { End(); return; }
 
-                if (behavior < 60)
+                _subject.IsPersistent = true;
+                _subject.BlockPermanentEvents = true;
+                _subject.Tasks.StandStill(-1);
+
+                _hostile = Utilities.Chance(25);   // 25% chance of hostility
+                _negotiationActive = !_hostile;
+
+                Utilities.Log("SuicideAttempt", $"Subject spawned. Hostile={_hostile}");
+
+                // Wait for officer to arrive
+                while (Game.LocalPlayer.Character.DistanceTo(_subject) > 30f && !_sceneEnded)
                 {
-                    // Peaceful compliance
-                    Game.DisplaySubtitle("~y~Subject appears distraught but cooperative. Engage in dialogue.");
-                    _subject.Tasks.StandStill(-1);
-                    AttemptDeescalation();
+                    GameFiber.Wait(500);
                 }
-                else if (behavior < 85)
-                {
-                    // Fleeing subject
-                    Game.DisplaySubtitle("~r~Subject fleeing! Attempt to detain safely!");
-                    _subject.Tasks.Flee(Game.LocalPlayer.Character.Position);
-                }
+
+                if (_sceneBlip.Exists()) _sceneBlip.Delete();
+
+                if (_hostile)
+                    HostileSequence();
                 else
-                {
-                    // Hostile action — if armed
-                    _hostile = true;
-                    if (_armed)
-                    {
-                        Game.DisplaySubtitle("~r~Subject raises weapon! Take cover!");
-                        _subject.Tasks.AimWeaponAt(Game.LocalPlayer.Character, -1);
-                        Functions.PlayScannerAudio("SHOTS_FIRED_OFFICER_INVOLVED");
-                    }
-                    else
-                    {
-                        Game.DisplaySubtitle("~r~Subject charges at you!");
-                        _subject.Tasks.FightAgainst(Game.LocalPlayer.Character);
-                    }
-                }
-
-                _callHandled = true;
+                    NegotiationSequence();
             }
-
-            // Player leaves far from scene — auto end
-            if (Game.LocalPlayer.Character.DistanceTo(_sceneLocation) > 600f)
+            catch (Exception ex)
             {
-                Game.DisplayHelp("You left the area. Other units will take over.");
+                Utilities.LogException("SuicideAttempt", ex);
                 End();
             }
         }
 
-        private void AttemptDeescalation()
+        private void NegotiationSequence()
         {
-            GameFiber.StartNew(() =>
+            Game.DisplaySubtitle("Attempt to negotiate with the suspect calmly.", 4000);
+
+            while (!_sceneEnded && _negotiationActive)
             {
-                try
+                if (Game.LocalPlayer.Character.DistanceTo(_subject) < 4.0f)
                 {
-                    GameFiber.Wait(4000);
-                    int resolution = _rng.Next(0, 100);
-                    if (resolution < 70)
+                    Game.DisplayHelp("Press ~y~Y~s~ to speak to the subject.");
+                    if (Game.IsKeyDown(System.Windows.Forms.Keys.Y))
                     {
-                        Game.DisplaySubtitle("~g~Subject calmed down after brief dialogue. Scene safe.");
-                        Functions.PlayScannerAudio("CODE_4_ADAM COPY_THAT SUBJECT_SAFE");
-                    }
-                    else if (resolution < 90)
-                    {
-                        Game.DisplaySubtitle("~r~Subject suddenly flees on foot!");
-                        _subject.Tasks.Flee(Game.LocalPlayer.Character.Position);
-                    }
-                    else
-                    {
-                        Game.DisplaySubtitle("~r~Subject pulls weapon during negotiation!");
-                        if (!_armed)
+                        Game.DisplayNotification("~b~You:~s~ I'm here to help you. Put down the weapon and let’s talk.");
+                        GameFiber.Wait(3500);
+                        bool surrenders = Utilities.Chance(70);
+
+                        if (surrenders)
                         {
-                            _armed = true;
-                            _subject.Inventory.GiveNewWeapon("WEAPON_PISTOL", 15, true);
+                            Game.DisplayNotification("~y~Subject:~s~ ...Okay... I don’t want to die.");
+                            GameFiber.Wait(2000);
+                            Game.DisplayNotification("~g~Subject has surrendered peacefully.");
+                            _negotiationActive = false;
+                            FinishScene(true);
+                            return;
                         }
-                        _subject.Tasks.AimWeaponAt(Game.LocalPlayer.Character, -1);
-                        Functions.PlayScannerAudio("SHOT_FIRED_OFFICER_INVOLVED");
+                        else
+                        {
+                            Game.DisplayNotification("~y~Subject:~s~ Stay back! I can’t do this anymore!");
+                            GameFiber.Wait(1500);
+                            bool flips = Utilities.Chance(30);
+                            if (flips)
+                            {
+                                _hostile = true;
+                                HostileSequence();
+                                return;
+                            }
+                        }
                     }
                 }
-                catch (Exception ex)
-                {
-                    Game.LogTrivial("[WSQ][SuicideAttempt] AttemptDeescalation Exception: " + ex.Message);
-                }
-                finally
-                {
-                    End();
-                }
-            });
+                GameFiber.Yield();
+            }
+        }
+
+        private void HostileSequence()
+        {
+            Game.DisplaySubtitle("The subject turns aggressive! Officer safety!", 4000);
+            _subject.Inventory.GiveNewWeapon("WEAPON_PISTOL", 7, true);
+            _subject.Tasks.FightAgainst(Game.LocalPlayer.Character);
+            Functions.PlayScannerAudio("ATTENTION_ALL_UNITS ASSAULT_WITH_A_DEADLY_WEAPON");
+
+            _pursuit = Functions.CreatePursuit();
+            Functions.AddPedToPursuit(_pursuit, _subject);
+            Functions.SetPursuitIsActiveForPlayer(_pursuit, true);
+
+            _pursuitActive = true;      // ✅ mark pursuit started
+            _sceneEnded = false;
+        }
+
+        private void FinishScene(bool peaceful)
+        {
+            _sceneEnded = true;
+
+            if (peaceful)
+            {
+                Game.DisplayNotification("~g~Scene Code 4:~s~ Subject stabilized and transported.");
+                ReportsPlusIntegration.SubmitIncidentReport("Suicide Attempt",
+                    "Subject peacefully negotiated and transported for evaluation.", true);
+            }
+            else
+            {
+                Game.DisplayNotification("~r~Subject Deceased~s~ — Incident closed.");
+                ReportsPlusIntegration.SubmitIncidentReport("Suicide Attempt",
+                    "Subject died or became aggressive; scene cleared.", false);
+            }
+
+            PlayerControlledEnd();
+        }
+
+        public override void Process()
+        {
+            base.Process();
+
+            if (_pursuitActive && _pursuit != null && !Functions.IsPursuitStillRunning(_pursuit))
+                FinishScene(false);
         }
 
         public override void End()
         {
             base.End();
-            Game.LogTrivial("[WSQ][SuicideAttempt] Cleaning up entities.");
-
-            try
-            {
-                if (_sceneBlip && _sceneBlip.Exists()) _sceneBlip.Delete();
-                if (_subject && _subject.Exists()) _subject.Dismiss();
-            }
-            catch (Exception ex)
-            {
-                Game.LogTrivial("[WSQ][SuicideAttempt] Cleanup Exception: " + ex.Message);
-            }
-
-            _sceneActive = false;
-            _callHandled = true;
-
-            Game.DisplayNotification("CHAR_POLICE", "CHAR_POLICE", "Dispatch", "Callout Completed", "Suicide attempt scene cleared. Report filed.");
+            Utilities.SafeDismissEntity(_subject);
+            Utilities.SafeDeleteBlip(_sceneBlip);
+            Game.LogTrivial("[WSQ][SuicideAttempt] Callout cleaned up.");
+            _sceneEnded = true;
+            _pursuitActive = false;
         }
     }
 }

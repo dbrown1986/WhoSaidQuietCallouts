@@ -3,13 +3,15 @@ using Rage;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
 using WhoSaidQuietCallouts.Core;
+using System.Windows.Forms; // Required for Keys.Y input
+using WhoSaidQuietCallouts;
 
 namespace WhoSaidQuietCallouts.Callouts
 {
     /// <summary>
     /// PublicIntoxication.cs
-    /// Version: 0.9.1 Alpha (Maintenance & Polished Behavior Build)
-    /// Date: March 7, 2026
+    /// Version: 0.9.1 Alpha (Final Polished Build)
+    /// Date: March 9, 2026
     /// Author: Who Said Quiet Team
     ///
     /// Description:
@@ -18,12 +20,12 @@ namespace WhoSaidQuietCallouts.Callouts
     ///  Random outcomes: cooperative, disorderly, or resistant behavior.
     /// </summary>
     [CalloutInfo("Public Intoxication", CalloutProbability.Low)]
-    public class PublicIntoxication : Callout
+    public class PublicIntoxication : WSQCalloutBase
     {
         private Ped _suspect;
         private Blip _sceneBlip;
         private Vector3 _spawnPoint;
-        private LHandle _pursuitHandle;
+        private LHandle _pursuit;
         private bool _sceneCompleted;
         private bool _pursuitActive;
         private bool _interactionComplete;
@@ -64,6 +66,8 @@ namespace WhoSaidQuietCallouts.Callouts
                     "Locate and assess the individual reported to be intoxicated.");
 
                 Functions.PlayScannerAudio("RESPOND_CODE_2");
+
+                StartCallout();
             }
             catch (Exception ex)
             {
@@ -72,9 +76,11 @@ namespace WhoSaidQuietCallouts.Callouts
             return base.OnCalloutAccepted();
         }
 
-        public override void OnCalloutStarted()
+        /// <summary>
+        /// Begins the main scenario thread.
+        /// </summary>
+        private void StartCallout()
         {
-            base.OnCalloutStarted();
             GameFiber.StartNew(CalloutLogic);
         }
 
@@ -93,37 +99,27 @@ namespace WhoSaidQuietCallouts.Callouts
 
                 _suspect.BlockPermanentEvents = true;
                 _suspect.IsPersistent = true;
-
                 Utilities.Log("PublicIntoxication", "Suspect spawned and scenario started.");
 
-                // Wait for officer to arrive
                 while (Game.LocalPlayer.Character.DistanceTo(_suspect.Position) > 30f && !_sceneCompleted)
                 {
                     GameFiber.Wait(1000);
                 }
 
-                if (_sceneBlip)
-                    _sceneBlip.Delete();
+                if (_sceneBlip.Exists()) _sceneBlip.Delete();
 
-                // Random behavior pattern
+                // Random behavior pattern (0 = cooperative, 1 = disorderly, 2 = resistant)
                 int behavior = Utilities.RandomInt(0, 3);
                 switch (behavior)
                 {
-                    case 0:
-                        CooperativeBehavior();
-                        break;
-                    case 1:
-                        DisorderlyBehavior();
-                        break;
-                    case 2:
-                        ResistantBehavior();
-                        break;
+                    case 0: CooperativeBehavior(); break;
+                    case 1: DisorderlyBehavior(); break;
+                    case 2: ResistantBehavior(); break;
                 }
 
                 while (!_sceneCompleted)
                 {
                     GameFiber.Wait(1000);
-
                     if (!_suspect.Exists() || _suspect.IsDead)
                     {
                         End();
@@ -150,7 +146,7 @@ namespace WhoSaidQuietCallouts.Callouts
             while (!_interactionComplete)
             {
                 GameFiber.Yield();
-                if (Game.LocalPlayer.Character.DistanceTo(_suspect) < 3f && Game.IsKeyDown(System.Windows.Forms.Keys.Y))
+                if (Game.LocalPlayer.Character.DistanceTo(_suspect) < 3f && Game.IsKeyDown(Keys.Y))
                 {
                     Game.DisplayNotification("~b~You:~s~ Sir, have you been drinking tonight?");
                     GameFiber.Wait(3000);
@@ -164,6 +160,7 @@ namespace WhoSaidQuietCallouts.Callouts
             }
         }
 
+        // ✅ Restored & Corrected DisorderlyBehavior()
         private void DisorderlyBehavior()
         {
             Game.DisplaySubtitle("The suspect is yelling incoherently and staggering...");
@@ -176,10 +173,11 @@ namespace WhoSaidQuietCallouts.Callouts
                 if (Utilities.WithinRange(Game.LocalPlayer.Character.Position, _suspect.Position, 4f))
                 {
                     Game.DisplayHelp("Press ~y~Y~s~ to attempt to calm the suspect.");
-                    if (Game.IsKeyDown(System.Windows.Forms.Keys.Y))
+                    if (Game.IsKeyDown(Keys.Y))
                     {
                         Game.DisplayNotification("~b~You:~s~ Calm down, sir, I need you to relax.");
                         GameFiber.Wait(2500);
+
                         bool complies = Utilities.Chance(70);
                         if (complies)
                         {
@@ -202,11 +200,13 @@ namespace WhoSaidQuietCallouts.Callouts
         private void ResistantBehavior()
         {
             Game.DisplaySubtitle("The suspect refuses to comply and begins walking away!");
-            _suspect.Tasks.Flee(Game.LocalPlayer.Character);
-            _pursuitHandle = Functions.CreatePursuit();
-            Functions.AddPedToPursuit(_pursuitHandle, _suspect);
-            Functions.SetPursuitIsActiveForPlayer(_pursuitHandle, true);
+            // ✅ Fixed Flee() syntax for RAGE v1.90+
+            _suspect.Tasks.Flee(Game.LocalPlayer.Character.Position, 200f, -1);
+            _pursuit = Functions.CreatePursuit();
+            Functions.AddPedToPursuit(_pursuit, _suspect);
+            Functions.SetPursuitIsActiveForPlayer(_pursuit, true);
             _pursuitActive = true;
+
             Game.DisplayNotification("~r~Suspect is resisting!~s~ Pursue and detain.");
         }
 
@@ -220,25 +220,28 @@ namespace WhoSaidQuietCallouts.Callouts
                 {
                     Game.DisplayNotification("~g~Scene Code 4:~s~ Suspect processed.");
                     StopThePedIntegration.AddSuspectNote(_suspect, "Appeared intoxicated but cooperative.");
-                    ReportsPlusIntegration.SubmitIncidentReport("Public Intoxication", "Suspect detained and safely transported.", true);
+                    ReportsPlusIntegration.SubmitIncidentReport("Public Intoxication",
+                        "Suspect detained and safely transported.", true);
                 }
                 else
                 {
-                    ReportsPlusIntegration.SubmitIncidentReport("Public Intoxication", "Suspect resisted arrest; use of force applied.", false);
+                    ReportsPlusIntegration.SubmitIncidentReport("Public Intoxication",
+                        "Suspect resisted arrest; use of force applied.", false);
                 }
             }
             catch (Exception ex)
             {
                 Utilities.LogException("PublicIntoxication", ex);
             }
-            End();
+
+            PlayerControlledEnd();
         }
 
         public override void Process()
         {
             base.Process();
 
-            if (_pursuitActive && !Functions.IsPursuitStillRunning(_pursuitHandle))
+            if (_pursuitActive && !Functions.IsPursuitStillRunning(_pursuit))
             {
                 FinishScene(false);
                 _pursuitActive = false;
@@ -248,11 +251,9 @@ namespace WhoSaidQuietCallouts.Callouts
         public override void End()
         {
             base.End();
-
             Utilities.SafeDismissEntity(_suspect);
             Utilities.SafeDeleteBlip(_sceneBlip);
-
-            Game.LogTrivial("[WSQ][PublicIntoxication] Callout ended/cleaned up.");
+            Game.LogTrivial("[WSQ][PublicIntoxication] Callout ended and cleaned up.");
             _sceneCompleted = true;
         }
     }

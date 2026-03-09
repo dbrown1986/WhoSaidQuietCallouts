@@ -1,23 +1,25 @@
-using System;
-using Rage;
+using LSPD_First_Response.Engine.Scripting.Entities;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
+using Rage;
+using System;
+using WhoSaidQuietCallouts;
 
 namespace WhoSaidQuietCallouts.Callouts
 {
     /// <summary>
     /// RoadRage.cs
-    /// Version: 0.9.1 Alpha (Maintenance & Documentation Cleanup Build)
-    /// Date: March 7, 2026
+    /// Version: 0.9.1 Alpha (Compatibility Build)
+    /// Date: March 9, 2026
     /// Author: Who Said Quiet Team
-    /// 
+    ///
     /// Description:
     ///  A violent road rage incident has been reported involving two or more vehicles.
     ///  Player must respond, de‑escalate the situation, and handle suspects appropriately.
     ///  Randomized outcomes include verbal disputes, physical altercations, or vehicle pursuits.
     /// </summary>
     [CalloutInfo("Road Rage", CalloutProbability.Medium)]
-    public class RoadRage : Callout
+    public class RoadRage : WSQCalloutBase
     {
         private Vector3 _sceneLocation;
         private Vehicle _vehA;
@@ -30,7 +32,7 @@ namespace WhoSaidQuietCallouts.Callouts
         private bool _handled;
         private bool _pursuitStarted;
         private LHandle _pursuit;
-        private Random _rng = new Random();
+        private readonly Random _rng = new Random();
 
         public override bool OnBeforeCalloutDisplayed()
         {
@@ -44,7 +46,8 @@ namespace WhoSaidQuietCallouts.Callouts
                 ShowCalloutAreaBlipBeforeAccepting(_sceneLocation, 60f);
                 Functions.PlayScannerAudioUsingPosition("CITIZENS_REPORT TRAFFIC_DISTURBANCE IN_OR_ON_POSITION", _sceneLocation);
 
-                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911", "Dispatch", "~y~Road Rage", "Caller reports two drivers fighting in the street.");
+                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911", "Dispatch", "~y~Road Rage",
+                    "Caller reports two drivers fighting in the street.");
                 return base.OnBeforeCalloutDisplayed();
             }
             catch (Exception ex)
@@ -60,20 +63,21 @@ namespace WhoSaidQuietCallouts.Callouts
             try
             {
                 // Create both vehicles and drivers
-                _vehA = new Vehicle("FUTO", _sceneLocation.Around(4f))
-                {
-                    IsPersistent = true
-                };
-                _vehB = new Vehicle("PENUMBRA", _sceneLocation.Around(8f))
-                {
-                    IsPersistent = true
-                };
+                _vehA = new Vehicle("FUTO", _sceneLocation.Around(4f)) { IsPersistent = true };
+                _vehB = new Vehicle("PENUMBRA", _sceneLocation.Around(8f)) { IsPersistent = true };
 
                 _driverA = _vehA.CreateRandomDriver();
+                _driverB = _vehB.CreateRandomDriver();
+
+                if (!_driverA.Exists() || !_driverB.Exists())
+                {
+                    Game.LogTrivial("[WSQ][RoadRage] Driver spawn failed — aborting callout.");
+                    End();
+                    return false;
+                }
+
                 _driverA.IsPersistent = true;
                 _driverA.BlockPermanentEvents = false;
-
-                _driverB = _vehB.CreateRandomDriver();
                 _driverB.IsPersistent = true;
                 _driverB.BlockPermanentEvents = false;
 
@@ -86,7 +90,6 @@ namespace WhoSaidQuietCallouts.Callouts
 
                 Game.DisplayHelp("Respond to the ~y~road rage~w~. Approach carefully — suspects may be aggressive.");
                 Functions.PlayScannerAudio("UNITS_RESPOND_CODE_2");
-
                 _sceneActive = true;
             }
             catch (Exception ex)
@@ -109,16 +112,21 @@ namespace WhoSaidQuietCallouts.Callouts
             if (distance < 30f && !_pursuitStarted)
             {
                 int behavior = _rng.Next(0, 100);
+
                 if (behavior < 50)
                 {
-                    // Verbal argument
-                    Game.DisplaySubtitle("~y~Drivers are arguing loudly. De-escalate the situation.");
-                    _driverA.Tasks.TurnToFaceEntity(_driverB, 2000);
-                    _driverB.Tasks.TurnToFaceEntity(_driverA, 2000);
+                    // 🗣 Verbal argument
+                    Game.DisplaySubtitle("~y~Drivers are arguing loudly. De‑escalate the situation.");
+
+                    float headingA = (_driverB.Position - _driverA.Position).ToHeading();
+                    float headingB = (_driverA.Position - _driverB.Position).ToHeading();
+
+                    _driverA.Tasks.AchieveHeading(headingA, 2000);
+                    _driverB.Tasks.AchieveHeading(headingB, 2000);
                 }
                 else if (behavior < 80)
                 {
-                    // Physical altercation
+                    // 🤜 Physical altercation
                     Game.DisplaySubtitle("~r~Drivers have started fighting!");
                     _driverA.Inventory.GiveNewWeapon("WEAPON_UNARMED", 0, true);
                     _driverB.Inventory.GiveNewWeapon("WEAPON_UNARMED", 0, true);
@@ -128,13 +136,13 @@ namespace WhoSaidQuietCallouts.Callouts
                 }
                 else
                 {
-                    // One driver flees
+                    // 🚗 One driver flees
                     Game.LogTrivial("[WSQ][RoadRage] One suspect fleeing – pursuit initiated.");
                     StartPursuit();
                 }
             }
 
-            // Scene resolution conditions
+            // Scene resolution
             if (_pursuitStarted && !Functions.IsPursuitStillRunning(_pursuit))
             {
                 Game.DisplaySubtitle("~g~Pursuit concluded. Scene secure.");
@@ -142,16 +150,16 @@ namespace WhoSaidQuietCallouts.Callouts
             }
 
             // End if both detained/dead after fight
-            if (_driverA && _driverB && !_pursuitStarted)
+            if (_driverA.Exists() && _driverB.Exists() && !_pursuitStarted)
             {
-                if ((!_driverA.IsAlive || Functions.IsPedArrested(_driverA)) &&
-                    (!_driverB.IsAlive || Functions.IsPedArrested(_driverB)))
-                {
+                bool driverANeutralized = !_driverA.IsAlive || Functions.IsPedArrested(_driverA);
+                bool driverBNeutralized = !_driverB.IsAlive || Functions.IsPedArrested(_driverB);
+
+                if (driverANeutralized && driverBNeutralized)
                     HandleCompletion();
-                }
             }
 
-            // Leave area failsafe
+            // Leave‑area failsafe
             if (Game.LocalPlayer.Character.DistanceTo(_sceneLocation) > 600f)
             {
                 Game.DisplayHelp("You left the area. Dispatch has cleared this call.");
@@ -170,7 +178,8 @@ namespace WhoSaidQuietCallouts.Callouts
                 Functions.SetPursuitIsActiveForPlayer(_pursuit, true);
                 _pursuitStarted = true;
 
-                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911", "Dispatch", "~r~Vehicle Pursuit", "Suspect is fleeing the scene. Engage the pursuit!");
+                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911",
+                    "Dispatch", "~r~Vehicle Pursuit", "Suspect is fleeing the scene. Engage the pursuit!");
                 Functions.PlayScannerAudio("WE_HAVE SUSPECT_ELUDING_POLICE UNITS_RESPOND_CODE_3");
             }
             catch (Exception ex)
@@ -185,8 +194,9 @@ namespace WhoSaidQuietCallouts.Callouts
             {
                 _handled = true;
                 Functions.PlayScannerAudio("CODE_4_ADAM COPY_THAT");
-                Game.DisplayNotification("CHAR_POLICE", "CHAR_POLICE", "Dispatch", "Callout Completed", "Road rage scene resolved.");
-                End();
+                Game.DisplayNotification("CHAR_POLICE", "CHAR_POLICE",
+                    "Dispatch", "Callout Completed", "Road rage scene resolved.");
+                PlayerControlledEnd();
             }
             catch (Exception ex)
             {
@@ -201,11 +211,11 @@ namespace WhoSaidQuietCallouts.Callouts
 
             try
             {
-                if (_sceneBlip && _sceneBlip.Exists()) _sceneBlip.Delete();
-                if (_vehA && _vehA.Exists()) _vehA.Dismiss();
-                if (_vehB && _vehB.Exists()) _vehB.Dismiss();
-                if (_driverA && _driverA.Exists()) _driverA.Dismiss();
-                if (_driverB && _driverB.Exists()) _driverB.Dismiss();
+                if (_sceneBlip?.Exists() == true) _sceneBlip.Delete();
+                if (_vehA?.Exists() == true) _vehA.Dismiss();
+                if (_vehB?.Exists() == true) _vehB.Dismiss();
+                if (_driverA?.Exists() == true) _driverA.Dismiss();
+                if (_driverB?.Exists() == true) _driverB.Dismiss();
             }
             catch (Exception ex)
             {

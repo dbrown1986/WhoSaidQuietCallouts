@@ -1,23 +1,25 @@
-using System;
-using Rage;
+﻿using LSPD_First_Response.Engine.Scripting.Entities;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
+using Rage;
+using System;
+using WhoSaidQuietCallouts;
 
 namespace WhoSaidQuietCallouts.Callouts
 {
     /// <summary>
     /// DrugDeal.cs
-    /// Version: 0.9.1 Alpha (Maintenance & Documentation Cleanup Build)
-    /// Date: March 7, 2026
+    /// Version: 0.9.1 Alpha (Compatibility Build)
+    /// Date: March 9, 2026
     /// Author: Who Said Quiet Team
-    /// 
+    ///
     /// Description:
     ///  Reports indicate a suspected narcotics transaction in progress.
     ///  Player must locate the participants, observe behavior, and intervene as needed.
     ///  Random outcomes include compliant arrests, pursuit, or shootout.
     /// </summary>
     [CalloutInfo("Drug Deal", CalloutProbability.Medium)]
-    public class DrugDeal : Callout
+    public class DrugDeal : WSQCalloutBase
     {
         private Vector3 _dealLocation;
         private Ped _dealer;
@@ -27,7 +29,7 @@ namespace WhoSaidQuietCallouts.Callouts
         private bool _callHandled;
         private bool _pursuitStarted;
         private LHandle _pursuitHandle;
-        private Random _rng = new Random();
+        private readonly Random _rng = new Random();
 
         public override bool OnBeforeCalloutDisplayed()
         {
@@ -41,7 +43,8 @@ namespace WhoSaidQuietCallouts.Callouts
                 ShowCalloutAreaBlipBeforeAccepting(_dealLocation, 75f);
 
                 Functions.PlayScannerAudioUsingPosition("CITIZENS_REPORT NARCOTICS_ACTIVITY IN_OR_ON_POSITION", _dealLocation);
-                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911", "Dispatch", "~r~Drug Deal", "Suspicious transaction in progress, proceed Code 2.");
+                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911",
+                    "Dispatch", "~r~Drug Deal", "Suspicious transaction in progress, proceed Code 2.");
                 return base.OnBeforeCalloutDisplayed();
             }
             catch (Exception ex)
@@ -57,21 +60,30 @@ namespace WhoSaidQuietCallouts.Callouts
 
             try
             {
-                // Create dealer and buyer
+                // Spawn dealer and buyer
                 _dealer = new Ped("A_M_Y_Downtown_01", _dealLocation.Around(1.5f), _rng.Next(0, 359));
-                _buyer  = new Ped("A_M_M_Skater_01",   _dealLocation.Around(2.5f), _rng.Next(0, 359));
+                _buyer = new Ped("A_M_M_Skater_01", _dealLocation.Around(2.5f), _rng.Next(0, 359));
+
+                if (!_dealer.Exists() || !_buyer.Exists())
+                {
+                    Game.LogTrivial("[WSQ][DrugDeal] Ped spawn failed — callout aborted.");
+                    End();
+                    return false;
+                }
 
                 _dealer.IsPersistent = true;
-                _dealer.BlockPermanentEvents = false;
                 _buyer.IsPersistent = true;
+                _dealer.BlockPermanentEvents = false;
                 _buyer.BlockPermanentEvents = false;
 
-                // Set behaviors
                 _dealer.RelationshipGroup = "DEALER";
-                _buyer.RelationshipGroup  = "BUYER";
+                _buyer.RelationshipGroup = "BUYER";
 
                 _dealer.Tasks.StandStill(-1);
-                _buyer.Tasks.TurnToFaceEntity(_dealer, 2000);
+
+                // 🔧 replaced TurnToFaceEntity
+                float heading = (_dealer.Position - _buyer.Position).ToHeading();
+                _buyer.Tasks.AchieveHeading(heading, 2000);
 
                 // Scene blip
                 _sceneBlip = new Blip(_dealLocation, 40f)
@@ -96,8 +108,9 @@ namespace WhoSaidQuietCallouts.Callouts
         public override void Process()
         {
             base.Process();
+
             if (!_sceneActive || _callHandled) return;
-            if (!_dealer || !_buyer) return;
+            if (!_dealer.Exists() || !_buyer.Exists()) return;
 
             float distance = Game.LocalPlayer.Character.DistanceTo(_dealLocation);
 
@@ -108,26 +121,26 @@ namespace WhoSaidQuietCallouts.Callouts
 
                 if (outcome < 40)
                 {
-                    // Compliant arrest scenario
+                    // 🟢 Compliant arrest
                     Game.DisplaySubtitle("~y~Both suspects spotted exchanging items. Move in for arrests.");
                     _dealer.Tasks.PutHandsUp(-1, Game.LocalPlayer.Character);
                     _buyer.Tasks.PutHandsUp(-1, Game.LocalPlayer.Character);
                     _callHandled = true;
                     Functions.PlayScannerAudio("CODE_4_ADAM COPY_THAT SUSPECTS_IN_CUSTODY");
-                    End();
+                    PlayerControlledEnd();
                 }
                 else if (outcome < 75)
                 {
-                    // One suspect flees while the other surrenders
+                    // 🟡 One suspect flees
                     Game.DisplaySubtitle("~r~Buyer fleeing on foot! Dealer remaining on scene.");
-                    _buyer.Tasks.Flee(Game.LocalPlayer.Character.Position);
+                    _buyer.Tasks.Flee(Game.LocalPlayer.Character.Position, 200f, -1);  // fixed overload
                     _dealer.Tasks.PutHandsUp(-1, Game.LocalPlayer.Character);
                     _pursuitStarted = true;
                     StartFootPursuit(_buyer);
                 }
                 else
                 {
-                    // Gunfight eruption
+                    // 🔴 Gunfight eruption
                     Game.DisplaySubtitle("~r~Suspects are armed! Take cover and return fire!");
                     _dealer.Inventory.GiveNewWeapon("WEAPON_PISTOL", 80, true);
                     _buyer.Inventory.GiveNewWeapon("WEAPON_PISTOL", 60, true);
@@ -137,20 +150,20 @@ namespace WhoSaidQuietCallouts.Callouts
                 }
             }
 
-            // Check if player leaves area
+            // Player leaves area
             if (Game.LocalPlayer.Character.DistanceTo(_dealLocation) > 500f)
             {
                 Game.DisplayHelp("You left the incident area. Dispatch is assigning another unit.");
                 End();
             }
 
-            // Conclude pursuit once over
+            // Conclude pursuit once done
             if (_pursuitStarted && _pursuitHandle != null && !Functions.IsPursuitStillRunning(_pursuitHandle))
             {
                 _callHandled = true;
                 Game.DisplaySubtitle("~g~Foot pursuit concluded. Scene handled.");
                 Functions.PlayScannerAudio("CODE_4_ADAM COPY_THAT");
-                End();
+                PlayerControlledEnd();
             }
         }
 
@@ -177,9 +190,9 @@ namespace WhoSaidQuietCallouts.Callouts
 
             try
             {
-                if (_sceneBlip && _sceneBlip.Exists()) _sceneBlip.Delete();
-                if (_dealer && _dealer.Exists()) _dealer.Dismiss();
-                if (_buyer && _buyer.Exists()) _buyer.Dismiss();
+                if (_sceneBlip?.Exists() == true) _sceneBlip.Delete();
+                if (_dealer?.Exists() == true) _dealer.Dismiss();
+                if (_buyer?.Exists() == true) _buyer.Dismiss();
             }
             catch (Exception ex)
             {
@@ -189,7 +202,8 @@ namespace WhoSaidQuietCallouts.Callouts
             _sceneActive = false;
             _callHandled = true;
 
-            Game.DisplayNotification("CHAR_POLICE", "CHAR_POLICE", "Dispatch", "Callout Completed", "Drug deal call handled successfully.");
+            Game.DisplayNotification("CHAR_POLICE", "CHAR_POLICE",
+                "Dispatch", "Callout Completed", "Drug deal call handled successfully.");
         }
     }
 }

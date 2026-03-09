@@ -2,6 +2,7 @@ using System;
 using Rage;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
+using WhoSaidQuietCallouts;
 
 namespace WhoSaidQuietCallouts.Callouts
 {
@@ -17,7 +18,7 @@ namespace WhoSaidQuietCallouts.Callouts
     ///  and recover the stolen police car.  May escalate into an armed confrontation.
     /// </summary>
     [CalloutInfo("Stolen Police Vehicle", CalloutProbability.Medium)]
-    public class StolenPoliceVehicle : Callout
+    public class StolenPoliceVehicle : WSQCalloutBase
     {
         private Vector3 _spawnPoint;
         private Vehicle _stolenUnit;
@@ -124,7 +125,7 @@ namespace WhoSaidQuietCallouts.Callouts
             {
                 Game.DisplaySubtitle("~g~Pursuit over. Vehicle recovered.");
                 _callHandled = true;
-                End();
+                PlayerControlledEnd();
             }
 
             // Failsafe distance cancel

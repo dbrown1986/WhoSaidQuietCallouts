@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Rage;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
+using WhoSaidQuietCallouts;
 
 namespace WhoSaidQuietCallouts.Callouts
 {
@@ -19,7 +20,7 @@ namespace WhoSaidQuietCallouts.Callouts
     ///  and suspect fleeing the scene.
     /// </summary>
     [CalloutInfo("Burglary", CalloutProbability.Medium)]
-    public class Burglary : Callout
+    public class Burglary : WSQCalloutBase
     {
         private Vector3 _scenePosition;
         private Blip _sceneBlip;
@@ -127,7 +128,7 @@ namespace WhoSaidQuietCallouts.Callouts
                 {
                     // Attempted escape
                     Game.DisplaySubtitle("~r~Suspect attempting to flee on foot!");
-                    _suspect.Tasks.Flee(Game.LocalPlayer.Character.Position);
+                    _suspect.Tasks.Flee(Game.LocalPlayer.Character.Position, 200f, -1);
                 }
                 else
                 {

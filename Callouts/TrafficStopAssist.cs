@@ -1,14 +1,15 @@
-using System;
+﻿using System;
 using Rage;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
+using WhoSaidQuietCallouts;
 
 namespace WhoSaidQuietCallouts.Callouts
 {
     /// <summary>
     /// TrafficStopAssist.cs
-    /// Version: 0.9.1 Alpha (Maintenance & Documentation Cleanup Build)
-    /// Date: March 7, 2026
+    /// Version: 0.9.1 Alpha (Compatibility Build)
+    /// Date: March 9, 2026
     /// Author: Who Said Quiet Team
     /// 
     /// Description:
@@ -17,7 +18,7 @@ namespace WhoSaidQuietCallouts.Callouts
     ///  compliant suspects, resistance, or immediate pursuit.
     /// </summary>
     [CalloutInfo("Traffic Stop Assist", CalloutProbability.Medium)]
-    public class TrafficStopAssist : Callout
+    public class TrafficStopAssist : WSQCalloutBase
     {
         private Vector3 _scenePosition;
         private Vehicle _suspectVehicle;
@@ -30,7 +31,7 @@ namespace WhoSaidQuietCallouts.Callouts
         private bool _pursuitStarted;
         private LHandle _pursuit;
 
-        private Random _rng = new Random();
+        private readonly Random _rng = new Random();
 
         public override bool OnBeforeCalloutDisplayed()
         {
@@ -44,7 +45,8 @@ namespace WhoSaidQuietCallouts.Callouts
                 ShowCalloutAreaBlipBeforeAccepting(_scenePosition, 75f);
 
                 Functions.PlayScannerAudioUsingPosition("OFFICER_REQUEST_BACKUP TRAFFIC_STOP IN_OR_ON_POSITION", _scenePosition);
-                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911", "Dispatch", "~b~Traffic Stop Assist", "Officer requires Code 2 backup for an ongoing traffic stop.");
+                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911", "Dispatch",
+                    "~b~Traffic Stop Assist", "Officer requires Code 2 backup for an ongoing traffic stop.");
                 return base.OnBeforeCalloutDisplayed();
             }
             catch (Exception ex)
@@ -66,14 +68,30 @@ namespace WhoSaidQuietCallouts.Callouts
                 };
 
                 _suspect = _suspectVehicle.CreateRandomDriver();
+                if (!_suspect.Exists())
+                {
+                    Game.LogTrivial("[WSQ][TrafficStopAssist] Suspect spawn failed.");
+                    End();
+                    return false;
+                }
+
                 _suspect.IsPersistent = true;
                 _suspect.BlockPermanentEvents = false;
 
                 // Spawn backup officer beside suspect vehicle
                 _backupOfficer = new Ped("S_M_Y_Cop_01", _scenePosition.Around(3f), 180f);
+                if (!_backupOfficer.Exists())
+                {
+                    Game.LogTrivial("[WSQ][TrafficStopAssist] Officer spawn failed.");
+                    End();
+                    return false;
+                }
+
                 _backupOfficer.IsPersistent = true;
                 _backupOfficer.BlockPermanentEvents = false;
-                Functions.SetPedAsCop(_backupOfficer, true);
+
+                // 🔧 Fixed: SetPedAsCop overload changed — now single bool parameter
+                Functions.SetPedAsCop(_backupOfficer);
                 _backupOfficer.Tasks.AimWeaponAt(_suspect, -1);
 
                 // Scene marker
@@ -110,25 +128,25 @@ namespace WhoSaidQuietCallouts.Callouts
 
                 if (roll < 50)
                 {
-                    // Compliant suspect
+                    // 🟢 Compliant suspect
                     Game.DisplaySubtitle("~y~Officer: Thanks for the assist, suspect is cooperative.");
                     _suspect.Tasks.LeaveVehicle(_suspectVehicle, LeaveVehicleFlags.None);
                     _suspect.Tasks.PutHandsUp(-1, _backupOfficer);
                     _backupOfficer.Tasks.AimWeaponAt(_suspect, -1);
                     Functions.PlayScannerAudio("CODE_4_ADAM COPY_THAT SUSPECT_IN_CUSTODY");
                     _callHandled = true;
-                    End();
+                    PlayerControlledEnd();
                 }
                 else if (roll < 80)
                 {
-                    // Sudden foot pursuit
+                    // 🏃 Suspect flees — fixed overload for Flee
                     Game.DisplaySubtitle("~r~Suspect fleeing on foot! Assist with the pursuit!");
-                    _suspect.Tasks.Flee(Game.LocalPlayer.Character);
+                    _suspect.Tasks.Flee(Game.LocalPlayer.Character.Position, 200f, -1);  // ✅ fixed overload
                     StartFootPursuit();
                 }
                 else
                 {
-                    // Suspect attack
+                    // 🔫 Suspect attacks
                     Game.DisplaySubtitle("~r~Suspect draws a weapon!");
                     _suspect.Inventory.GiveNewWeapon("WEAPON_PISTOL", 60, true);
                     _suspect.Tasks.FightAgainstClosestHatedTarget(100f);
@@ -141,10 +159,10 @@ namespace WhoSaidQuietCallouts.Callouts
             {
                 Game.DisplaySubtitle("~g~Suspect apprehended. Call cleared.");
                 _callHandled = true;
-                End();
+                PlayerControlledEnd();
             }
 
-            // Too far -> Auto cancel
+            // Too far → Auto cancel
             if (Game.LocalPlayer.Character.DistanceTo(_scenePosition) > 600f)
             {
                 Game.DisplayHelp("You left the area. The stop has concluded without your assistance.");
@@ -174,11 +192,10 @@ namespace WhoSaidQuietCallouts.Callouts
             Game.LogTrivial("[WSQ][TrafficStopAssist] Cleaning up entities.");
             try
             {
-                if (_sceneBlip && _sceneBlip.Exists()) _sceneBlip.Delete();
-
-                if (_suspect && _suspect.Exists()) _suspect.Dismiss();
-                if (_backupOfficer && _backupOfficer.Exists()) _backupOfficer.Dismiss();
-                if (_suspectVehicle && _suspectVehicle.Exists()) _suspectVehicle.Dismiss();
+                _sceneBlip?.Delete();
+                if (_suspect.Exists()) _suspect.Dismiss();
+                if (_backupOfficer.Exists()) _backupOfficer.Dismiss();
+                if (_suspectVehicle.Exists()) _suspectVehicle.Dismiss();
             }
             catch (Exception ex)
             {
@@ -187,7 +204,8 @@ namespace WhoSaidQuietCallouts.Callouts
 
             _sceneActive = false;
             _callHandled = true;
-            Game.DisplayNotification("CHAR_POLICE", "CHAR_POLICE", "Dispatch", "Callout Completed", "Traffic stop assist handled successfully.");
+            Game.DisplayNotification("CHAR_POLICE", "CHAR_POLICE",
+                "Dispatch", "Callout Completed", "Traffic stop assist handled successfully.");
         }
     }
 }

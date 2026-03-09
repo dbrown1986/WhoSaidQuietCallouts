@@ -1,29 +1,27 @@
 using System;
 using Rage;
+using LSPD_First_Response.Mod.API;
 
 namespace WhoSaidQuietCallouts.Core
 {
     /// <summary>
     /// UltimateBackupIntegration.cs
-    /// Version: 0.9.1 Alpha (Maintenance & Documentation Cleanup Build)
-    /// Date: March 7, 2026
-    /// Author: Who Said Quiet Team
-    ///
+    /// Version 0.9.2 Stable (March 9 2026)
+    /// 
     /// Description:
-    ///  Provides reflection-based, safe integration with Ultimate Backup by BejoIjo.
-    ///  Enables advanced backup dispatch options, squad presets, and automatic notifications.
-    ///  Gracefully bypasses itself if the plugin is not installed or API changes are detected.
+    ///  Provides reflection-based, safe integration with Ultimate Backup by BejoIjo.
+    ///  Removes dependency on Microsoft.CSharp runtime binder, and tolerates
+    ///  missing LSPDFR enum definitions by invoking RequestBackup via reflection.
     /// </summary>
     public static class UltimateBackupIntegration
     {
+        private enum EBackupResponseType { Code2, Code3 }
+        private enum EBackupUnitType { LocalUnit, AirUnit, SWAT }
+
         private static bool _initAttempted;
         private static bool _apiDetected;
         private static Type _ubAPI;
 
-        /// <summary>
-        /// Checks for Ultimate Backup installation and availability.
-        /// Safe to call once from Main.cs during plugin load.
-        /// </summary>
         public static void Initialize()
         {
             if (_initAttempted) return;
@@ -34,24 +32,21 @@ namespace WhoSaidQuietCallouts.Core
                 _ubAPI = Type.GetType("UltimateBackup.API.Functions, UltimateBackup", false);
                 _apiDetected = _ubAPI != null;
 
-                if (_apiDetected)
-                    Game.LogTrivial("[WSQ][UB] Ultimate Backup API detected — integration enabled.");
-                else
-                    Game.LogTrivial("[WSQ][UB] Ultimate Backup not found — skipping integration.");
+                Game.LogTrivial(_apiDetected
+                    ? "[WSQ][UB] Ultimate Backup API detected — integration enabled."
+                    : "[WSQ][UB] Ultimate Backup not found — skipping integration.");
             }
             catch (Exception ex)
             {
                 _apiDetected = false;
-                Game.LogTrivial("[WSQ][UB] Initialize Exception: " + ex.Message);
+                Game.LogTrivial("[WSQ][UB] Initialize Exception: " + ex.Message);
             }
         }
 
         /// <summary>
-        /// Requests a backup unit using an Ultimate Backup preset (for example, "LocalPatrol" or "SWAT").
-        /// Falls back to standard LSPDFR backup if UB is unavailable.
+        /// Requests a backup unit using Ultimate Backup if available,
+        /// otherwise falls back to a universal reflected RequestBackup call.
         /// </summary>
-        /// <param name="presetName">Backup preset identifier; e.g., "LocalPatrol", "SWAT", "AirSupport".</param>
-        /// <param name="position">Optional location. If null, defaults to the player’s current position.</param>
         public static void RequestBackup(string presetName = "LocalPatrol", Vector3? position = null)
         {
             try
@@ -64,35 +59,28 @@ namespace WhoSaidQuietCallouts.Core
                     if (method != null)
                     {
                         method.Invoke(null, new object[] { presetName, spawn });
-                        Game.LogTrivial($"[WSQ][UB] Requested Ultimate Backup preset: {presetName}");
+                        Game.LogTrivial($"[WSQ][UB] Requested Ultimate Backup preset: {presetName}");
                         return;
-                    }
-                    else
-                    {
-                        Game.LogTrivial("[WSQ][UB] SpawnBackupUnit() not present — using fallback backup.");
                     }
                 }
 
-                // fallback to vanilla LSPDFR backup
-                LSPD_First_Response.Mod.API.Functions.RequestBackup(spawn,
-                    LSPD_First_Response.Mod.API.EBackupResponseType.Code2,
-                    LSPD_First_Response.Mod.API.EBackupUnitType.LocalUnit);
-                Game.LogTrivial("[WSQ][UB] Requested vanilla backup (fallback).");
+                // ── Universal fallback (works even if enum types missing) ──
+                SafeRequestBackup(spawn, 0, 1);  // Code2 LocalUnit
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][UB] RequestBackup Exception: " + ex.Message);
+                Game.LogTrivial("[WSQ][UB] RequestBackup Exception: " + ex.Message);
             }
         }
 
         /// <summary>
-        /// Requests a specialized tactical team (e.g., SWAT or Noose) through Ultimate Backup.
+        /// Requests a tactical (SWAT) backup unit.
         /// </summary>
         public static void RequestTacticalBackup(Vector3? position = null)
         {
             if (!_apiDetected)
             {
-                RequestBackup("SWAT", position);
+                SafeRequestBackup(position ?? Game.LocalPlayer.Character.Position, 0, 2); // Code2 SWAT
                 return;
             }
 
@@ -103,26 +91,23 @@ namespace WhoSaidQuietCallouts.Core
                 if (method != null)
                 {
                     method.Invoke(null, new object[] { "SWAT", spawn });
-                    Game.LogTrivial("[WSQ][UB] Tactical team (SWAT) requested via Ultimate Backup.");
+                    Game.LogTrivial("[WSQ][UB] SWAT team requested via Ultimate Backup.");
                 }
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][UB] RequestTacticalBackup Exception: " + ex.Message);
+                Game.LogTrivial("[WSQ][UB] RequestTacticalBackup Exception: " + ex.Message);
             }
         }
 
         /// <summary>
-        /// Calls an air support helicopter if Ultimate Backup supports that preset.
-        /// Falls back to built‑in LSPDFR air unit if UB missing.
+        /// Requests an air support unit or fallback generic backup.
         /// </summary>
         public static void RequestAirSupport(Vector3? position = null)
         {
             if (!_apiDetected)
             {
-                LSPD_First_Response.Mod.API.Functions.RequestBackup(position ?? Game.LocalPlayer.Character.Position,
-                    LSPD_First_Response.Mod.API.EBackupResponseType.Code3,
-                    LSPD_First_Response.Mod.API.EBackupUnitType.AirUnit);
+                SafeRequestBackup(position ?? Game.LocalPlayer.Character.Position, 1, 1); // Code3 AirUnit
                 return;
             }
 
@@ -133,17 +118,17 @@ namespace WhoSaidQuietCallouts.Core
                 if (method != null)
                 {
                     method.Invoke(null, new object[] { "AirSupport", spawn });
-                    Game.LogTrivial("[WSQ][UB] Air support unit requested via Ultimate Backup.");
+                    Game.LogTrivial("[WSQ][UB] Air support unit requested via Ultimate Backup.");
                 }
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][UB] RequestAirSupport Exception: " + ex.Message);
+                Game.LogTrivial("[WSQ][UB] RequestAirSupport Exception: " + ex.Message);
             }
         }
 
         /// <summary>
-        /// Dismisses all backup units spawned by Ultimate Backup (if supported by API).
+        /// Dismisses all backup units if supported by Ultimate Backup.
         /// </summary>
         public static void DismissAllBackup()
         {
@@ -151,37 +136,56 @@ namespace WhoSaidQuietCallouts.Core
             {
                 if (_apiDetected && _ubAPI != null)
                 {
-                    var dismissMethod = _ubAPI.GetMethod("DismissAllBackupUnits");
-                    if (dismissMethod != null)
+                    var m = _ubAPI.GetMethod("DismissAllBackupUnits");
+                    if (m != null)
                     {
-                        dismissMethod.Invoke(null, null);
-                        Game.LogTrivial("[WSQ][UB] Dismissed all Ultimate Backup units.");
+                        m.Invoke(null, null);
+                        Game.LogTrivial("[WSQ][UB] Dismissed all Ultimate Backup units.");
                         return;
                     }
                 }
-
-                Game.LogTrivial("[WSQ][UB] DismissAllBackupUnits method unavailable or UB not active.");
+                Game.LogTrivial("[WSQ][UB] DismissAllBackupUnits unavailable or UB inactive.");
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][UB] DismissAllBackup Exception: " + ex.Message);
+                Game.LogTrivial("[WSQ][UB] DismissAllBackup Exception: " + ex.Message);
             }
         }
 
         /// <summary>
-        /// Returns true if Ultimate Backup is currently available.
+        /// Reflective universal RequestBackup wrapper for legacy safety.
         /// </summary>
-        public static bool IsAvailable()
+        private static void SafeRequestBackup(Vector3 position, int respCode, int unitCode)
         {
-            return _apiDetected;
+            try
+            {
+                var method = typeof(LSPD_First_Response.Mod.API.Functions).GetMethod(
+                    "RequestBackup",
+                    new[] { typeof(Vector3), typeof(Enum), typeof(Enum) });
+
+                if (method == null)
+                {
+                    Game.LogTrivial("[WSQ][UB] RequestBackup method not found (VR fallback).");
+                    return;
+                }
+
+                var respEnum = Enum.ToObject(method.GetParameters()[1].ParameterType, respCode);
+                var unitEnum = Enum.ToObject(method.GetParameters()[2].ParameterType, unitCode);
+                method.Invoke(null, new object[] { position, respEnum, unitEnum });
+
+                Game.LogTrivial("[WSQ][UB] RequestBackup invoked via reflection fallback.");
+            }
+            catch (Exception ex)
+            {
+                Game.LogTrivial("[WSQ][UB] SafeRequestBackup Exception: " + ex.Message);
+            }
         }
 
-        /// <summary>
-        /// Prints integration status summary.
-        /// </summary>
+        public static bool IsAvailable() => _apiDetected;
+
         public static void PrintIntegrationSummary()
         {
-            Game.LogTrivial($"[WSQ][UB] Integration active={_apiDetected}, APIType={_ubAPI?.FullName ?? "null"}");
+            Game.LogTrivial($"[WSQ][UB] Integration active={_apiDetected}, APIType={_ubAPI?.FullName ?? "null"}");
         }
     }
 }

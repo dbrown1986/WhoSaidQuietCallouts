@@ -6,20 +6,14 @@ namespace WhoSaidQuietCallouts.Core
 {
     /// <summary>
     /// LSPDFRExpandedIntegration.cs
-    /// Version: 0.9.1 Alpha (Maintenance & Documentation Cleanup Build)
-    /// Date: March 7, 2026
-    /// Author: Who Said Quiet Team
-    ///
-    /// Description:
-    ///  Provides safe, modular compatibility hooks for "LSPDFR Expanded" ecosystem mods.
-    ///  Each feature is optional — integration auto-detects supported APIs such as:
-    ///  - Ultimate Backup
-    ///  - Stop the Ped (STP)
-    ///  - Traffic Policer / Arrest Manager
-    ///  When not detected, this system silently skips integration to maintain stability.
+    /// Version 0.9.2 Stable (March 9 2026)
+    /// Safe reflection‑based integration without Microsoft.CSharp binder dependency.
     /// </summary>
     public static class LSPDFRExpandedIntegration
     {
+        private enum EBackupResponseType { Code2, Code3 }
+        private enum EBackupUnitType { LocalUnit, SWAT, AirUnit }
+
         private static bool _initAttempted;
         private static bool _ultimateBackupAvailable;
         private static bool _stopThePedAvailable;
@@ -29,10 +23,6 @@ namespace WhoSaidQuietCallouts.Core
         private static Type _stpAPI;
         private static Type _arrestAPI;
 
-        /// <summary>
-        /// Initializes compatibility checks and binds to known plugin APIs.
-        /// Safe to call multiple times — executes only once.
-        /// </summary>
         public static void Initialize()
         {
             if (_initAttempted) return;
@@ -44,24 +34,22 @@ namespace WhoSaidQuietCallouts.Core
                 DetectStopThePed();
                 DetectArrestManager();
 
-                Game.LogTrivial($"[WSQ][LSPDFR+Init] UltimateBackup={_ultimateBackupAvailable} | StopThePed={_stopThePedAvailable} | ArrestManager={_arrestManagerAvailable}");
+                Game.LogTrivial($"[WSQ][LSPDFR+] Init → UB:{_ultimateBackupAvailable} | STP:{_stopThePedAvailable} | AM:{_arrestManagerAvailable}");
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][LSPDFR+Init] Initialization Exception: " + ex);
+                Game.LogTrivial("[WSQ][LSPDFR+Init] Initialization Exception: " + ex);
             }
         }
 
-        #region Detection Methods
-
+        #region Detection
         private static void DetectUltimateBackup()
         {
             try
             {
                 _ubAPI = Type.GetType("UltimateBackup.API.Functions, UltimateBackup", false);
                 _ultimateBackupAvailable = _ubAPI != null;
-                if (_ultimateBackupAvailable)
-                    Game.LogTrivial("[WSQ][LSPDFR+] Ultimate Backup detected.");
+                if (_ultimateBackupAvailable) Game.LogTrivial("[WSQ][LSPDFR+] Ultimate Backup detected.");
             }
             catch { _ultimateBackupAvailable = false; }
         }
@@ -72,8 +60,7 @@ namespace WhoSaidQuietCallouts.Core
             {
                 _stpAPI = Type.GetType("StopThePed.API.Functions, StopThePed", false);
                 _stopThePedAvailable = _stpAPI != null;
-                if (_stopThePedAvailable)
-                    Game.LogTrivial("[WSQ][LSPDFR+] Stop The Ped detected.");
+                if (_stopThePedAvailable) Game.LogTrivial("[WSQ][LSPDFR+] Stop The Ped detected.");
             }
             catch { _stopThePedAvailable = false; }
         }
@@ -84,19 +71,16 @@ namespace WhoSaidQuietCallouts.Core
             {
                 _arrestAPI = Type.GetType("ArrestManager.API.Main, ArrestManager", false);
                 _arrestManagerAvailable = _arrestAPI != null;
-                if (_arrestManagerAvailable)
-                    Game.LogTrivial("[WSQ][LSPDFR+] Arrest Manager detected.");
+                if (_arrestManagerAvailable) Game.LogTrivial("[WSQ][LSPDFR+] Arrest Manager detected.");
             }
             catch { _arrestManagerAvailable = false; }
         }
-
         #endregion
 
-        #region Ultimate Backup Integration
-
+        #region Ultimate Backup Integration
         /// <summary>
-        /// Requests backup using Ultimate Backup if installed.
-        /// Otherwise uses the standard LSPDFR backup system.
+        /// Requests backup using Ultimate Backup if installed,
+        /// otherwise calls LSPDFR RequestBackup reflectively (no binder).
         /// </summary>
         public static void RequestSmartBackup(Vector3 position, string presetName = "LocalPatrol")
         {
@@ -108,28 +92,36 @@ namespace WhoSaidQuietCallouts.Core
                     if (spawnBackupMethod != null)
                     {
                         spawnBackupMethod.Invoke(null, new object[] { presetName, position });
-                        Game.LogTrivial($"[WSQ][LSPDFR+] Ultimate Backup request sent: {presetName}");
+                        Game.LogTrivial($"[WSQ][LSPDFR+] UB request sent: {presetName}");
                         return;
                     }
                 }
 
-                // fallback to vanilla LSPDFR backup
-                Functions.RequestBackup(position, EBackupResponseType.Code3, EBackupUnitType.LocalUnit);
-                Game.LogTrivial("[WSQ][LSPDFR+] Used default LSPDFR backup request.");
+                // ── Universal fallback via reflection (no System.Dynamic) ──
+                var method = typeof(LSPD_First_Response.Mod.API.Functions).GetMethod(
+                    "RequestBackup",
+                    new[] { typeof(Vector3), typeof(Enum), typeof(Enum) });
+
+                if (method != null)
+                {
+                    var respEnum = Enum.ToObject(method.GetParameters()[1].ParameterType, 1); // Code3
+                    var unitEnum = Enum.ToObject(method.GetParameters()[2].ParameterType, 0); // LocalUnit
+                    method.Invoke(null, new object[] { position, respEnum, unitEnum });
+                    Game.LogTrivial("[WSQ][LSPDFR+] Reflected vanilla backup request (Code 3).");
+                }
+                else
+                {
+                    Game.LogTrivial("[WSQ][LSPDFR+] RequestBackup method not found – no action taken.");
+                }
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][LSPDFR+] RequestSmartBackup Exception: " + ex.Message);
+                Game.LogTrivial("[WSQ][LSPDFR+] RequestSmartBackup Exception: " + ex.Message);
             }
         }
-
         #endregion
 
-        #region Stop The Ped Integration
-
-        /// <summary>
-        /// Adds a suspect check command for STP arrest menu if supported.
-        /// </summary>
+        #region Stop The Ped Integration
         public static void NotifyStopThePed(Ped suspect, string reason)
         {
             try
@@ -140,27 +132,21 @@ namespace WhoSaidQuietCallouts.Core
                     if (notifyMethod != null)
                     {
                         notifyMethod.Invoke(null, new object[] { suspect, reason });
-                        Game.LogTrivial($"[WSQ][LSPDFR+] Sent StopThePed notification: {reason}");
+                        Game.LogTrivial($"[WSQ][LSPDFR+] STP notification sent: {reason}");
                         return;
                     }
                 }
 
-                Game.LogTrivial("[WSQ][LSPDFR+] StopThePed not available, skipped suspect notification.");
+                Game.LogTrivial("[WSQ][LSPDFR+] Stop The Ped not available – skipped.");
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][LSPDFR+] NotifyStopThePed Exception: " + ex.Message);
+                Game.LogTrivial("[WSQ][LSPDFR+] NotifyStopThePed Exception: " + ex.Message);
             }
         }
-
         #endregion
 
-        #region Arrest Manager Integration
-
-        /// <summary>
-        /// Transfers suspect to Arrest Manager system if available, 
-        /// or falls back to a vanilla dismiss/arrest animation.
-        /// </summary>
+        #region Arrest Manager Integration
         public static void TransferToArrestManager(Ped suspect)
         {
             try
@@ -171,7 +157,7 @@ namespace WhoSaidQuietCallouts.Core
                     if (transferMethod != null)
                     {
                         transferMethod.Invoke(null, new object[] { suspect });
-                        Game.LogTrivial("[WSQ][LSPDFR+] Suspect transferred via Arrest Manager API.");
+                        Game.LogTrivial("[WSQ][LSPDFR+] Arrest Manager transfer complete.");
                         return;
                     }
                 }
@@ -180,27 +166,19 @@ namespace WhoSaidQuietCallouts.Core
                 if (suspect && suspect.Exists())
                 {
                     suspect.Tasks.Cower(-1);
-                    Game.DisplaySubtitle("~o~Arrest Manager not detected — process arrest manually.");
+                    Game.DisplaySubtitle("~o~Arrest Manager not detected — process arrest manually.");
                 }
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][LSPDFR+] TransferToArrestManager Exception: " + ex.Message);
+                Game.LogTrivial("[WSQ][LSPDFR+] TransferToArrestManager Exception: " + ex.Message);
             }
         }
-
         #endregion
 
         #region Utility
-
-        /// <summary>
-        /// Returns a summary string of detected LSPDFR ecosystem plugins.
-        /// </summary>
-        public static string GetIntegrationSummary()
-        {
-            return $"UltimateBackup={_ultimateBackupAvailable}, StopThePed={_stopThePedAvailable}, ArrestManager={_arrestManagerAvailable}";
-        }
-
+        public static string GetIntegrationSummary() =>
+            $"UltimateBackup={_ultimateBackupAvailable}, StopThePed={_stopThePedAvailable}, ArrestManager={_arrestManagerAvailable}";
         #endregion
     }
 }

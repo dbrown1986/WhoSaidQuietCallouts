@@ -2,6 +2,7 @@ using System;
 using Rage;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
+using WhoSaidQuietCallouts;
 
 namespace WhoSaidQuietCallouts.Callouts
 {
@@ -17,7 +18,8 @@ namespace WhoSaidQuietCallouts.Callouts
     ///  a safe encounter to medical emergencies or deceased subjects.
     /// </summary>
     [CalloutInfo("Welfare Check", CalloutProbability.Medium)]
-    public class WelfareCheck : Callout
+    public class WelfareCheck : WSQCalloutBase
+
     {
         private Vector3 _sceneLocation;
         private Ped _resident;
@@ -118,7 +120,7 @@ namespace WhoSaidQuietCallouts.Callouts
                     _callHandled = true;
                 }
 
-                End();
+                PlayerControlledEnd();
             }
 
             if (Game.LocalPlayer.Character.DistanceTo(_sceneLocation) > 600f)

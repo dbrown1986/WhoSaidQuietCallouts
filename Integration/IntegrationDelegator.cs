@@ -1,43 +1,30 @@
 using System;
 using Rage;
+using WhoSaidQuietCallouts.Integration;
 
 namespace WhoSaidQuietCallouts.Core
 {
     /// <summary>
     /// IntegrationDelegator.cs
-    /// Version: 0.9.1 Alpha (Maintenance & Documentation Cleanup Build)
-    /// Date: March 7, 2026
-    /// Author: Who Said Quiet Team
-    ///
-    /// Description:
-    ///  Acts as the central coordinator for all WSQ integration modules.
-    ///  Handles initialization order, error containment, and diagnostic logging
-    ///  for every supported external mod and framework.
-    ///  This ensures safe, unified startup without redundant API lookups.
-    /// 
-    /// Integrations Managed:
-    ///Here’s the **raw C# source code** for your `IntegrationDelegator.cs` — the central orchestration system for all your *Who Said Quiet Callouts v1.9.1 (d Revision – March 7 2026)* integration modules.  
-
-This static class safely initializes, tracks, and summarizes every connected integration system (e.g., CompuLite, Grammar Police, Ultimate Backup, Stop The Ped, LSPDFR Expanded, Reports Plus, External Police Computer, and Policing Redefined) at plugin startup.
-
----
-
-```csharp
-using System;
-using Rage;
-
-namespace WhoSaidQuietCallouts.Core
-{
-    /// <summary>
-    /// IntegrationDelegator.cs
-    /// Version: 1.9.1 (Consolidated Core Integration)
-    /// Date: March 7, 2026
+    /// Version: 0.9.1 Alpha (Consolidated Core Integration)
+    /// Date: March 9, 2026
     /// Author: Who Said Quiet Team
     ///
     /// Description:
     ///  Acts as a unified integrator for all third‑party plugin and API connections.
-    ///  Initializes all available integration classes, handles sequencing,
-    ///  and provides diagnostics / version tracking for the WSQ Callouts pack.
+    ///  Initializes all available integration classes, handles sequencing, and
+    ///  provides diagnostics / version tracking for the WSQ Callouts pack.
+    ///
+    /// Integrations managed:
+    ///  • Callout Interface
+    ///  • CompuLite
+    ///  • Grammar Police
+    ///  • LSPDFR Expanded
+    ///  • Ultimate Backup
+    ///  • Stop The Ped
+    ///  • Reports Plus
+    ///  • Policing Redefined
+    ///  • External Police Computer
     /// </summary>
     public static class IntegrationDelegator
     {
@@ -46,7 +33,7 @@ namespace WhoSaidQuietCallouts.Core
 
         /// <summary>
         /// Performs all plugin‑level integration initialization steps.
-        /// Should be called once during Main.cs → OnPluginStart().
+        /// Should be called once during Main.cs → OnPluginStart().
         /// </summary>
         public static void InitializeAll()
         {
@@ -58,7 +45,7 @@ namespace WhoSaidQuietCallouts.Core
 
             try
             {
-                // ---- Order matters for dependency hierarchy ----
+                // ---- Load each integration module in dependency order ----
                 CalloutInterfaceIntegration.RegisterAllCallouts();
                 CompuLiteIntegration.Initialize();
                 GrammarPoliceIntegration.Initialize();
@@ -80,7 +67,7 @@ namespace WhoSaidQuietCallouts.Core
         }
 
         /// <summary>
-        /// Provides runtime report that lists every integration status.
+        /// Prints a full integration summary to the Rage log.
         /// </summary>
         public static void PrintBootSummary()
         {
@@ -88,21 +75,21 @@ namespace WhoSaidQuietCallouts.Core
             {
                 Game.LogTrivial("───────────────────────────────────────────────");
                 Game.LogTrivial(" WSQ CALLOUTS – Integration Summary Report");
-                Game.LogTrivial($" Build 1.9.1‑d  ({_bootTimestamp:MMMM dd, yyyy})");
+                Game.LogTrivial($" Build 0.9.1 Alpha ({_bootTimestamp:MMMM dd, yyyy})");
                 Game.LogTrivial("───────────────────────────────────────────────");
 
-                Game.LogTrivial($" • Callout Interface .......... active [✓]");
-                Game.LogTrivial($" • CompuLite .................. {(IsAvailable("CompuLite") ? "[✓]" : "[–] skipped")}");
-                Game.LogTrivial($" • Grammar Police ............. {(IsAvailable("GrammarPolice") ? "[✓]" : "[–] skipped")}");
-                Game.LogTrivial($" • LSPDFR Expanded ............ {(IsAvailable("LSPDFRExpanded") ? "[✓]" : "[–] skipped")}");
-                Game.LogTrivial($" • Ultimate Backup ............ {(UltimateBackupIntegration.IsAvailable() ? "[✓]" : "[–] skipped")}");
-                Game.LogTrivial($" • Stop The Ped ............... {(IsAvailable("StopThePed") ? "[✓]" : "[–] skipped")}");
-                Game.LogTrivial($" • Reports Plus ............... {(IsAvailable("ReportsPlus") ? "[✓]" : "[–] skipped")}");
-                Game.LogTrivial($" • Policing Redefined ......... {(IsAvailable("PolicingRedefined") ? "[✓]" : "[–] skipped")}");
-                Game.LogTrivial($" • External Police Computer ... {(IsAvailable("ExternalMDC") ? "[✓]" : "[–] skipped")}");
+                Game.LogTrivial($" • Callout Interface .......... active [✓]");
+                Game.LogTrivial($" • CompuLite .................. {(IsAvailable("CompuLite") ? "[✓]" : "[–] skipped")}");
+                Game.LogTrivial($" • Grammar Police ............. {(IsAvailable("GrammarPolice") ? "[✓]" : "[–] skipped")}");
+                Game.LogTrivial($" • LSPDFR Expanded ............ {(IsAvailable("LSPDFRExpanded") ? "[✓]" : "[–] skipped")}");
+                Game.LogTrivial($" • Ultimate Backup ............ {(UltimateBackupIntegration.IsAvailable() ? "[✓]" : "[–] skipped")}");
+                Game.LogTrivial($" • Stop The Ped ............... {(IsAvailable("StopThePed") ? "[✓]" : "[–] skipped")}");
+                Game.LogTrivial($" • Reports Plus ............... {(IsAvailable("ReportsPlus") ? "[✓]" : "[–] skipped")}");
+                Game.LogTrivial($" • Policing Redefined ......... {(IsAvailable("PolicingRedefined") ? "[✓]" : "[–] skipped")}");
+                Game.LogTrivial($" • External Police Computer ... {(IsAvailable("ExternalMDC") ? "[✓]" : "[–] skipped")}");
 
                 Game.LogTrivial("───────────────────────────────────────────────");
-                Game.LogTrivial(" Integration Delegator initialization complete.");
+                Game.LogTrivial(" Integration Delegator initialization complete.");
             }
             catch (Exception ex)
             {
@@ -112,6 +99,7 @@ namespace WhoSaidQuietCallouts.Core
 
         /// <summary>
         /// Helper that checks runtime support status for known integrations.
+        /// Stubbed to return true for enabled stubs.
         /// </summary>
         private static bool IsAvailable(string module)
         {
@@ -119,7 +107,7 @@ namespace WhoSaidQuietCallouts.Core
             {
                 return module switch
                 {
-                    "CompuLite" => true, // handled by safe reflection from CompuLiteIntegration.Initialize()
+                    "CompuLite" => true,
                     "GrammarPolice" => true,
                     "LSPDFRExpanded" => true,
                     "StopThePed" => true,
@@ -136,21 +124,21 @@ namespace WhoSaidQuietCallouts.Core
         }
 
         /// <summary>
-        /// Allows other scripts to re‑trigger or refresh integrations manually at runtime.
+        /// Allows runtime re‑initialization of integrations.
         /// </summary>
         public static void Reload()
         {
-            Game.LogTrivial("[WSQ][Delegator] Reload requested — reinitializing integrations.");
+            Game.LogTrivial("[WSQ][Delegator] Reload requested — reinitializing integrations.");
             _initialized = false;
             InitializeAll();
         }
 
         /// <summary>
-        /// Prints an abbreviated one‑line summary for quick debug overlay usage.
+        /// Provides a brief status for HUD/debug overlay.
         /// </summary>
         public static string GetQuickStatus()
         {
-            return $"[WSQ] Integrations: UB={UltimateBackupIntegration.IsAvailable()}, STP=OK, PR=OK, ReportsPlus=OK";
+            return $"[WSQ] Integrations: UB={UltimateBackupIntegration.IsAvailable()}, STP=OK, PR=OK, ReportsPlus=OK";
         }
     }
 }

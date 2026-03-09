@@ -1,12 +1,13 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <!--==============================================================
       WHO SAID QUIET CALLOUTS
       Version: 0.9.1 Alpha  (March 7, 2026)
       Visual Studio 2022 – Relative Reference Template
       Target Framework: .NET Framework 4.8 (x64)
   ==============================================================-->
-
+  <PropertyGroup>
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
@@ -14,11 +15,10 @@
     <OutputType>Library</OutputType>
     <RootNamespace>WhoSaidQuietCallouts</RootNamespace>
     <AssemblyName>WhoSaidQuietCallouts</AssemblyName>
+    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
-
   <!-- ================== BUILD CONFIGURATIONS ================== -->
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <DebugSymbols>true</DebugSymbols>
@@ -29,7 +29,6 @@
     <PlatformTarget>x64</PlatformTarget>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
@@ -38,17 +37,14 @@
     <PlatformTarget>x64</PlatformTarget>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-
   <!-- =================== CORE GAME REFERENCES =================== -->
   <ItemGroup>
     <Reference Include="RagePluginHook">
       <HintPath>.\RagePluginHook.dll</HintPath>
     </Reference>
-
     <Reference Include="LSPD_First_Response">
       <HintPath>.\LSPD_First_Response.dll</HintPath>
     </Reference>
-
     <!-- .NET Base Libraries -->
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -56,64 +52,46 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
   </ItemGroup>
-
   <!-- ================== OPTIONAL INTEGRATION DLLs ================== -->
   <ItemGroup>
     <!-- 1. Ultimate Backup -->
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="UltimateBackup">
       <HintPath>.\UltimateBackup.dll</HintPath>
       <Private>false</Private>
     </Reference>
-
     <!-- 2. Stop The Ped -->
     <Reference Include="StopThePed">
       <HintPath>.\StopThePed.dll</HintPath>
       <Private>false</Private>
     </Reference>
-
     <!-- 3. Reports Plus -->
     <Reference Include="ReportsPlus">
       <HintPath>.\ReportsPlus.dll</HintPath>
       <Private>false</Private>
     </Reference>
-
     <!-- 4. CompuLite -->
-    <Reference Include="CompuLite">
-      <HintPath>.\CompuLite.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-
     <!-- 5. Grammar Police -->
     <Reference Include="GrammarPolice">
       <HintPath>.\GrammarPolice.dll</HintPath>
       <Private>false</Private>
     </Reference>
-
     <!-- 6. Policing Redefined -->
     <Reference Include="PolicingRedefined">
       <HintPath>.\PolicingRedefined.dll</HintPath>
       <Private>false</Private>
     </Reference>
-
     <!-- 7. LSPDFR Expanded -->
-    <Reference Include="LSPDFR_Expanded">
-      <HintPath>.\LSPDFR_Expanded.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-
     <!-- 8. Callout Interface -->
     <Reference Include="CalloutInterface">
       <HintPath>.\CalloutInterface.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
-
   <!-- =================== SOURCE FILES =================== -->
   <ItemGroup>
     <!-- Automatically include all .cs files in subfolders -->
-    <Compile Include="**\*.cs" />
+    <Compile Include="**\*.cs" Exclude="obj\**;bin\**" />
   </ItemGroup>
-
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-
 </Project>

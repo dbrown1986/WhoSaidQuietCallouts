@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Rage;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
+using WhoSaidQuietCallouts;
 
 namespace WhoSaidQuietCallouts.Callouts
 {
@@ -16,7 +17,7 @@ namespace WhoSaidQuietCallouts.Callouts
     ///  Player must respond, secure the area, and neutralize threats while ensuring civilian safety.
     /// </summary>
     [CalloutInfo("Armed Robbery", CalloutProbability.High)]
-    public class ArmedRobbery : Callout
+    public class ArmedRobbery : WSQCalloutBase
     {
         private Vector3 _spawnPoint;
         private Blip _sceneBlip;
@@ -89,7 +90,7 @@ namespace WhoSaidQuietCallouts.Callouts
             catch (Exception ex)
             {
                 Game.LogTrivial("[WSQ][ArmedRobbery] Exception during OnCalloutAccepted: " + ex);
-                End();
+                PlayerControlledEnd();
             }
             return base.OnCalloutAccepted();
         }
@@ -107,7 +108,7 @@ namespace WhoSaidQuietCallouts.Callouts
                 _callHandled = true;
                 Game.DisplaySubtitle("~g~All suspects neutralized. Secure the scene and await further instructions.");
                 Functions.PlayScannerAudio("CODE_4_ADAM COPY THAT");
-                End();
+                PlayerControlledEnd();
             }
 
             // If player becomes too far away, terminate

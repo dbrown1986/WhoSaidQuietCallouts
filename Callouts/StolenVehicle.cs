@@ -2,6 +2,7 @@ using System;
 using Rage;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
+using WhoSaidQuietCallouts;
 
 namespace WhoSaidQuietCallouts.Callouts
 {
@@ -17,7 +18,7 @@ namespace WhoSaidQuietCallouts.Callouts
     ///  depending on the suspect’s behavior.
     /// </summary>
     [CalloutInfo("Stolen Vehicle", CalloutProbability.Medium)]
-    public class StolenVehicle : Callout
+    public class StolenVehicle : WSQCalloutBase
     {
         private Vector3 _spawnPoint;
         private Vehicle _vehicle;
@@ -165,7 +166,7 @@ namespace WhoSaidQuietCallouts.Callouts
                 Functions.PlayScannerAudio("CODE_4_ADAM COPY_THAT");
 
                 _callHandled = true;
-                End();
+                PlayerControlledEnd();
             }
             catch (Exception ex)
             {

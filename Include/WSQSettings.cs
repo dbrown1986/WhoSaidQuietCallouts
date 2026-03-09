@@ -5,52 +5,56 @@ using Rage;
 namespace WhoSaidQuietCallouts.Core
 {
     /// <summary>
-    /// WSQSettings.cs
-    /// Version: 0.9.1 Alpha (Maintenance & Configuration Build)
-    /// Date: March 7, 2026
+    /// WSQSettings.cs (Settings Manager)
+    /// Version: 0.9.1 Alpha (Compatibility Build)
+    /// Date: March 9, 2026
     /// Author: Who Said Quiet Team
-    ///
-    /// Description:
-    ///  Global configuration handler for Who Said Quiet Callouts.
-    ///  Loads and saves user preferences from WSQ_Settings.ini.
-    ///  Provides helper accessors for commonly used parameters
-    ///  (e.g., AI difficulty, backup callout delay, debug mode toggles, etc.).
     /// </summary>
     public static class WSQSettings
     {
-        private static string _settingsFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins", "LSPDFR", "WhoSaidQuietCallouts");
-        private static string _settingsFile = Path.Combine(_settingsFolder, "WSQ_Settings.ini");
+        private static readonly string _settingsFolder =
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins", "LSPDFR", "WhoSaidQuietCallouts");
+        private static readonly string _settingsFile =
+            Path.Combine(_settingsFolder, "WhoSaidQuietCallouts.ini");
 
-        // --- Runtime Settings (default values) ---
-        public static bool EnableDebugLogs { get; private set; } = false;
-        public static bool AllowHighRiskCalls { get; private set; } = true;
-        public static bool IntegrationsEnabled { get; private set; } = true;
-        public static bool EnableImmersionAudio { get; private set; } = true;
-        public static int MinCalloutCooldownSeconds { get; private set; } = 90;
-        public static int MaxCalloutCooldownSeconds { get; private set; } = 180;
+        // ───── General ─────
+        public static bool EnableLogging { get; private set; } = true;
+        public static int LogLevel { get; private set; } = 1;
+        public static int MinCalloutCooldownSeconds { get; private set; } = 30;
+        public static int MaxCalloutCooldownSeconds { get; private set; } = 300;
 
-        public static float AmbientCrimeDensity { get; private set; } = 1.0f; // 100%
-        public static string PreferredBackupPreset { get; private set; } = "LocalPatrol";
+        // ───── Integrations ─────
+        public static bool StopThePed { get; private set; }
+        public static bool CompuLite { get; private set; }
+        public static bool GrammarPolice { get; private set; }
+        public static bool CalloutInterface { get; private set; }
+        public static bool UltimateBackup { get; private set; }
+        public static bool LSPDFRExpanded { get; private set; }
+        public static bool PolicingRedefined { get; private set; }
+        public static bool ReportsPlus { get; private set; }
+        public static bool ExternalPoliceComputer { get; private set; }
+
+        // ───── SuicideCallout ─────
+        public static bool SuicideAttempt { get; private set; }
+        public static bool EnableResponseTimer { get; private set; } = true;
+        public static bool EnableHiddenEMSTimer { get; private set; } = true;
+        public static bool EnableHelplineOverlay { get; private set; } = true;
 
         private static bool _initialized;
 
-        /// <summary>
-        /// Initializes and loads settings from file (creates default if missing).
-        /// </summary>
         public static void Initialize()
         {
             if (_initialized) return;
 
             try
             {
-                // Ensure directory exists
                 if (!Directory.Exists(_settingsFolder))
                     Directory.CreateDirectory(_settingsFolder);
 
                 if (!File.Exists(_settingsFile))
                 {
                     WriteDefaultFile();
-                    Game.LogTrivial("[WSQ][Settings] Created default WSQ_Settings.ini.");
+                    Game.LogTrivial("[WSQ][Settings] Created default WhoSaidQuietCallouts.ini.");
                 }
 
                 LoadValues();
@@ -59,22 +63,18 @@ namespace WhoSaidQuietCallouts.Core
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][Settings] Initialization Exception: " + ex.Message);
+                Game.LogTrivial("[WSQ][Settings] Initialize Exception: " + ex.Message);
             }
         }
 
-        /// <summary>
-        /// Reads settings from the .ini file line by line.
-        /// </summary>
         private static void LoadValues()
         {
             try
             {
-                var lines = File.ReadAllLines(_settingsFile);
-                foreach (string rawLine in lines)
+                foreach (var raw in File.ReadAllLines(_settingsFile))
                 {
-                    string line = rawLine.Trim();
-                    if (string.IsNullOrEmpty(line) || line.StartsWith(";") || line.StartsWith("#"))
+                    string line = raw.Trim();
+                    if (string.IsNullOrEmpty(line) || line.StartsWith(";") || line.StartsWith("#") || line.StartsWith("["))
                         continue;
 
                     string[] parts = line.Split('=');
@@ -85,40 +85,39 @@ namespace WhoSaidQuietCallouts.Core
 
                     switch (key)
                     {
-                        case "EnableDebugLogs":
-                            EnableDebugLogs = val.Equals("true", StringComparison.OrdinalIgnoreCase);
+                        // --- General ---
+                        case "EnableLogging":
+                            EnableLogging = ParseBool(val); break;
+                        case "LogLevel":
+                            if (int.TryParse(val, out int logLevel))
+                                LogLevel = Clamp(logLevel, 0, 3);
                             break;
-
-                        case "AllowHighRiskCalls":
-                            AllowHighRiskCalls = val.Equals("true", StringComparison.OrdinalIgnoreCase);
-                            break;
-
-                        case "IntegrationsEnabled":
-                            IntegrationsEnabled = val.Equals("true", StringComparison.OrdinalIgnoreCase);
-                            break;
-
-                        case "EnableImmersionAudio":
-                            EnableImmersionAudio = val.Equals("true", StringComparison.OrdinalIgnoreCase);
-                            break;
-
                         case "MinCalloutCooldownSeconds":
-                            int.TryParse(val, out int min);
-                            MinCalloutCooldownSeconds = Math.Clamp(min, 30, 600);
+                            if (int.TryParse(val, out int min))
+                                MinCalloutCooldownSeconds = Clamp(min, 5, 900);
                             break;
-
                         case "MaxCalloutCooldownSeconds":
-                            int.TryParse(val, out int max);
-                            MaxCalloutCooldownSeconds = Math.Clamp(max, 60, 900);
+                            if (int.TryParse(val, out int max))
+                                MaxCalloutCooldownSeconds = Clamp(max, 10, 1800);
                             break;
 
-                        case "AmbientCrimeDensity":
-                            float.TryParse(val, out float density);
-                            AmbientCrimeDensity = Math.Clamp(density, 0.0f, 5.0f);
-                            break;
+                        // --- Integrations ---
+                        case "StopThePed": StopThePed = ParseBool(val); break;
+                        case "CompuLite": CompuLite = ParseBool(val); break;
+                        case "GrammarPolice": GrammarPolice = ParseBool(val); break;
+                        case "CalloutInterface": CalloutInterface = ParseBool(val); break;
+                        case "UltimateBackup": UltimateBackup = ParseBool(val); break;
+                        case "LSPDFRExpanded": LSPDFRExpanded = ParseBool(val); break;
+                        case "PolicingRedefined": PolicingRedefined = ParseBool(val); break;
+                        case "ReportsPlus": ReportsPlus = ParseBool(val); break;
+                        case "ExternalPoliceComputer": ExternalPoliceComputer = ParseBool(val); break;
 
-                        case "PreferredBackupPreset":
-                            PreferredBackupPreset = val;
-                            break;
+                        // --- SuicideCallout ---
+                        case "SuicideAttempt": SuicideAttempt = ParseBool(val); break;
+                        case "EnableResponseTimer": EnableResponseTimer = ParseBool(val); break;
+                        case "EnableHiddenEMSTimer": EnableHiddenEMSTimer = ParseBool(val); break;
+                        case "EnableHelplineOverlay": EnableHelplineOverlay = ParseBool(val); break;
+                        default: break;
                     }
                 }
             }
@@ -128,5 +127,78 @@ namespace WhoSaidQuietCallouts.Core
             }
         }
 
-        /// <summary>
-        /// Writes a default settings file
+        private static void WriteDefaultFile()
+        {
+            try
+            {
+                using (StreamWriter w = new StreamWriter(_settingsFile, false))
+                {
+                    w.WriteLine("; =======================================================================");
+                    w.WriteLine("; WHO SAID QUIET CALLOUTS - CONFIGURATION FILE");
+                    w.WriteLine("; Version: 0.9.1 Alpha (Compatibility Build)");
+                    w.WriteLine($"; Date: {DateTime.Now:MMMM dd, yyyy}");
+                    w.WriteLine("; -----------------------------------------------------------------------");
+                    w.WriteLine("[General]");
+                    w.WriteLine("EnableLogging=true");
+                    w.WriteLine("LogLevel=1");
+                    w.WriteLine("MinCalloutCooldownSeconds=30");
+                    w.WriteLine("MaxCalloutCooldownSeconds=300");
+                    w.WriteLine();
+                    w.WriteLine("[Integrations]");
+                    w.WriteLine("StopThePed=false");
+                    w.WriteLine("CompuLite=false");
+                    w.WriteLine("GrammarPolice=false");
+                    w.WriteLine("CalloutInterface=false");
+                    w.WriteLine("UltimateBackup=false");
+                    w.WriteLine("LSPDFRExpanded=false");
+                    w.WriteLine("PolicingRedefined=false");
+                    w.WriteLine("ReportsPlus=false");
+                    w.WriteLine("ExternalPoliceComputer=false");
+                    w.WriteLine();
+                    w.WriteLine("[SuicideCallout]");
+                    w.WriteLine("SuicideAttempt=false");
+                    w.WriteLine("EnableResponseTimer=true");
+                    w.WriteLine("EnableHiddenEMSTimer=true");
+                    w.WriteLine("EnableHelplineOverlay=true");
+                }
+            }
+            catch (Exception ex)
+            {
+                Game.LogTrivial("[WSQ][Settings] WriteDefaultFile Exception: " + ex.Message);
+            }
+        }
+
+        private static bool ParseBool(string v) =>
+            v.Equals("true", StringComparison.OrdinalIgnoreCase);
+
+        // ✅ Manual clamp works in .NET 4.8
+        private static int Clamp(int value, int min, int max)
+        {
+            if (value < min) return min;
+            if (value > max) return max;
+            return value;
+        }
+
+        public static void Reload()
+        {
+            try
+            {
+                LoadValues();
+                Game.DisplayNotification("CHAR_POLICE", "CHAR_POLICE",
+                    "~b~Who Said Quiet Callouts~s~", "Reload Complete",
+                    "Settings reloaded successfully.");
+            }
+            catch (Exception ex)
+            {
+                Game.LogTrivial("[WSQ][Settings] Reload Exception: " + ex.Message);
+            }
+        }
+
+        public static string Summary()
+        {
+            return $"[WSQ Settings] LogLevel={LogLevel}, " +
+                   $"Cooldown={MinCalloutCooldownSeconds}-{MaxCalloutCooldownSeconds}s, " +
+                   $"UB={UltimateBackup}, STP={StopThePed}, GP={GrammarPolice}, Suicide={SuicideAttempt}";
+        }
+    }
+}

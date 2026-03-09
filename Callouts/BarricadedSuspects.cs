@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Rage;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
+using WhoSaidQuietCallouts;
 
 namespace WhoSaidQuietCallouts.Callouts
 {
@@ -18,7 +19,7 @@ namespace WhoSaidQuietCallouts.Callouts
     ///  or initiate a SWAT entry.  Randomized outcomes include negotiation success, ambush, or surrender.
     /// </summary>
     [CalloutInfo("Barricaded Suspects", CalloutProbability.Medium)]
-    public class BarricadedSuspects : Callout
+    public class BarricadedSuspects : WSQCalloutBase
     {
         private Vector3 _buildingEntrance;
         private Blip _sceneBlip;
@@ -94,7 +95,7 @@ namespace WhoSaidQuietCallouts.Callouts
             catch (Exception ex)
             {
                 Game.LogTrivial("[WSQ][BarricadedSuspects] OnCalloutAccepted Exception: " + ex);
-                End();
+                PlayerControlledEnd();
             }
 
             return base.OnCalloutAccepted();
@@ -126,7 +127,7 @@ namespace WhoSaidQuietCallouts.Callouts
                     }
                     Functions.PlayScannerAudio("CODE_4_ADAM COPY_THAT SUSPECTS_SURRENDERED");
                     _handled = true;
-                    End();
+                    PlayerControlledEnd();
                 }
                 else if (roll < 80)
                 {
@@ -159,7 +160,7 @@ namespace WhoSaidQuietCallouts.Callouts
                 Game.DisplaySubtitle("~g~All suspects neutralized. Scene secure. SWAT standing down.");
                 _handled = true;
                 Functions.PlayScannerAudio("CODE_4_ADAM COPY_THAT");
-                End();
+                PlayerControlledEnd();
             }
 
             // Area leave failsafe

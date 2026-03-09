@@ -2,6 +2,7 @@ using System;
 using Rage;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
+using WhoSaidQuietCallouts;
 
 namespace WhoSaidQuietCallouts.Callouts
 {
@@ -16,7 +17,7 @@ namespace WhoSaidQuietCallouts.Callouts
     ///  run vehicle information, and respond accordingly. Scenario may escalate into a pursuit or arrest.
     /// </summary>
     [CalloutInfo("Suspicious Vehicle", CalloutProbability.Medium)]
-    public class SuspiciousVehicle : Callout
+    public class SuspiciousVehicle : WSQCalloutBase
     {
         private Vector3 _vehicleLocation;
         private Vehicle _suspiciousVehicle;
@@ -129,7 +130,7 @@ namespace WhoSaidQuietCallouts.Callouts
                 _handled = true;
                 Game.DisplaySubtitle("~g~Suspect apprehended or pursuit concluded.");
                 Functions.PlayScannerAudio("CODE_4_ADAM COPY_THAT");
-                End();
+                PlayerControlledEnd();
             }
 
             // Player leaves area
@@ -143,7 +144,7 @@ namespace WhoSaidQuietCallouts.Callouts
         {
             try
             {
-                Game.LogTrivial("[WSQ][SuspiciousVehicle] Driver fleeing—pursuit initiated!");
+                Game.LogTrivial("[WSQ][SuspiciousVehicle] Driver fleeing — pursuit initiated!");
                 _pursuit = Functions.CreatePursuit();
                 Functions.AddPedToPursuit(_pursuit, _driver);
                 Functions.SetPursuitIsActiveForPlayer(_pursuit, true);

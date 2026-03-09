@@ -66,7 +66,27 @@ namespace WhoSaidQuietCallouts.Core
                 {
                     try
                     {
-                        Functions.RegisterCallout(className);
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.ArmedRobbery));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.PursuitSuspect));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.DomesticDisturbance));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.SuspiciousVehicle));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.Kidnapping));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.GangShootout));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.Burglary));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.AnimalAttack));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.PublicIntoxication));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.StolenVehicle));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.OfficerDown));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.RoadRage));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.BarricadedSuspects));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.SpeedingVehicle));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.MissingPerson));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.DrugDeal));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.VIPEscort));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.TrafficStopAssist));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.WelfareCheck));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.StolenPoliceVehicle));
+                        Functions.RegisterCallout(typeof(WhoSaidQuietCallouts.Callouts.SuicideAttempt));
                         Game.LogTrivial($"[WSQ][Registrar] Registered: {className}");
                     }
                     catch (Exception ex)

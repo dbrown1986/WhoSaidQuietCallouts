@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Rage;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
+using WhoSaidQuietCallouts;
 
 namespace WhoSaidQuietCallouts.Callouts
 {
@@ -18,7 +19,7 @@ namespace WhoSaidQuietCallouts.Callouts
     ///  reaches the destination safely.  Possible threats may appear en route.
     /// </summary>
     [CalloutInfo("VIP Escort", CalloutProbability.Medium)]
-    public class VIPEscort : Callout
+    public class VIPEscort : WSQCalloutBase
     {
         private Vector3 _pickupLocation;
         private Vector3 _destination;
@@ -176,7 +177,7 @@ namespace WhoSaidQuietCallouts.Callouts
                 Game.LogTrivial("[WSQ][VIPEscort] HandleCompletion Exception: " + ex.Message);
             }
 
-            End();
+            PlayerControlledEnd();
         }
 
         public override void End()

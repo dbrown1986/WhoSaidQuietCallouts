@@ -2,6 +2,7 @@ using System;
 using Rage;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
+using WhoSaidQuietCallouts;
 
 namespace WhoSaidQuietCallouts.Callouts
 {
@@ -17,7 +18,7 @@ namespace WhoSaidQuietCallouts.Callouts
     ///  Outcome varies between safe recovery, medical emergency, or foul play.
     /// </summary>
     [CalloutInfo("Missing Person", CalloutProbability.Medium)]
-    public class MissingPerson : Callout
+    public class MissingPerson : WSQCalloutBase
     {
         private Vector3 _lastKnownPos;
         private Ped _missingSubject;
@@ -115,7 +116,7 @@ namespace WhoSaidQuietCallouts.Callouts
                 }
 
                 _callHandled = true;
-                End();
+                PlayerControlledEnd();
             }
 
             if (Game.LocalPlayer.Character.DistanceTo(_lastKnownPos) > 800f)

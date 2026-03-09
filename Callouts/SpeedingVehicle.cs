@@ -1,14 +1,15 @@
-using System;
+﻿using System;
 using Rage;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
+using WhoSaidQuietCallouts;
 
 namespace WhoSaidQuietCallouts.Callouts
 {
     /// <summary>
     /// SpeedingVehicle.cs
-    /// Version: 0.9.1 Alpha (Maintenance & Documentation Cleanup Build)
-    /// Date: March 7, 2026
+    /// Version: 0.9.1 Alpha (Compatibility Build)
+    /// Date: March 9, 2026
     /// Author: Who Said Quiet Team
     /// 
     /// Description:
@@ -17,7 +18,7 @@ namespace WhoSaidQuietCallouts.Callouts
     ///  attempt to evade, or engage in dangerous driving.
     /// </summary>
     [CalloutInfo("Speeding Vehicle", CalloutProbability.Medium)]
-    public class SpeedingVehicle : Callout
+    public class SpeedingVehicle : WSQCalloutBase
     {
         private Vector3 _spawnPoint;
         private Vehicle _suspectVehicle;
@@ -28,7 +29,7 @@ namespace WhoSaidQuietCallouts.Callouts
         private bool _pursuitStarted;
         private LHandle _pursuitHandle;
 
-        private Random _rng = new Random();
+        private readonly Random _rng = new Random();
 
         public override bool OnBeforeCalloutDisplayed()
         {
@@ -42,7 +43,8 @@ namespace WhoSaidQuietCallouts.Callouts
                 ShowCalloutAreaBlipBeforeAccepting(_spawnPoint, 80f);
 
                 Functions.PlayScannerAudioUsingPosition("CITIZENS_REPORT RECKLESS_DRIVER IN_OR_ON_POSITION", _spawnPoint);
-                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911", "Dispatch", "~y~Speeding Vehicle", "Caller reports a vehicle weaving through traffic at high speeds.");
+                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911", "Dispatch", "~y~Speeding Vehicle",
+                    "Caller reports a vehicle weaving through traffic at high speeds.");
                 return base.OnBeforeCalloutDisplayed();
             }
             catch (Exception ex)
@@ -55,27 +57,31 @@ namespace WhoSaidQuietCallouts.Callouts
         public override bool OnCalloutAccepted()
         {
             Game.LogTrivial("[WSQ][SpeedingVehicle] Callout accepted.");
-
             try
             {
-                // Create vehicle and driver
+                // Spawn vehicle and driver
                 _suspectVehicle = new Vehicle("BUFFALO2", _spawnPoint)
                 {
                     IsPersistent = true
                 };
 
                 _driver = _suspectVehicle.CreateRandomDriver();
+                if (!_driver.Exists())
+                {
+                    End();
+                    return false;
+                }
+
                 _driver.IsPersistent = true;
                 _driver.BlockPermanentEvents = false;
 
-                // Vehicle blip
+                // Blip marker
                 _vehicleBlip = _suspectVehicle.AttachBlip();
                 _vehicleBlip.Color = System.Drawing.Color.Orange;
                 _vehicleBlip.Name = "Speeding Vehicle";
 
                 Game.DisplayHelp("Locate the ~y~speeding vehicle~w~ and initiate a traffic stop when safe.");
                 Functions.PlayScannerAudio("UNITS_RESPOND_CODE_3");
-
                 _sceneActive = true;
             }
             catch (Exception ex)
@@ -90,43 +96,50 @@ namespace WhoSaidQuietCallouts.Callouts
         public override void Process()
         {
             base.Process();
-
             if (!_sceneActive || _callHandled) return;
-            if (!_suspectVehicle || !_driver) return;
+            if (!_suspectVehicle.Exists() || !_driver.Exists()) return;
 
             float distance = Game.LocalPlayer.Character.DistanceTo(_spawnPoint);
 
-            // Random vehicle behavior upon player approach
+            // Player arrives close enough to trigger suspect behavior
             if (distance < 80f && !_pursuitStarted)
             {
                 int behavior = _rng.Next(0, 100);
+
                 if (behavior < 60)
                 {
-                    // Compliant driver slows down
+                    // 🟢 Compliant driver slows down
                     Game.DisplaySubtitle("~y~Suspect vehicle observed speeding. Initiate a traffic stop.");
                     _driver.Tasks.CruiseWithVehicle(20f, VehicleDrivingFlags.Normal);
                 }
                 else if (behavior < 85)
                 {
-                    // Reckless driving continues
+                    // 🟡 Reckless driving continues
                     Game.DisplaySubtitle("~o~Suspect ignoring sirens and continues driving recklessly!");
-                    _suspectVehicle.Speed = 40f;
-                    _driver.Tasks.CruiseWithVehicle(40f, VehicleDrivingFlags.AvoidVehicles);
+
+                    // Entity.Speed is read‑only in new API — use ApplyForceRelative for brief acceleration
+                    if (_suspectVehicle.Exists())
+                        // Safely simulate acceleration using direct velocity scaling (compatible with all RPH builds)
+                        if (_suspectVehicle.Exists())
+                        {
+                            Vector3 fwd = _suspectVehicle.ForwardVector;
+                            _suspectVehicle.Velocity = fwd * 40f;  // sets approximate speed in m/s (~90 mph)
+                        }
+
+                    _driver.Tasks.CruiseWithVehicle(40f, VehicleDrivingFlags.Normal);
                 }
                 else
                 {
-                    // High-speed pursuit
+                    // 🔴 High‑speed pursuit
                     StartPursuit();
                 }
             }
 
-            // Conclude when pursuit ends
+            // Pursuit concluded
             if (_pursuitStarted && !Functions.IsPursuitStillRunning(_pursuitHandle))
-            {
                 HandleCompletion();
-            }
 
-            // If player leaves area, terminate call
+            // End call if player leaves area
             if (Game.LocalPlayer.Character.DistanceTo(_spawnPoint) > 800f)
             {
                 Game.DisplayHelp("You left the area. Dispatch will handle remaining units.");
@@ -145,7 +158,8 @@ namespace WhoSaidQuietCallouts.Callouts
                 _pursuitStarted = true;
 
                 Functions.PlayScannerAudio("WE_HAVE SUSPECT_FLEEING_RECKLESS_DRIVING");
-                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911", "Dispatch", "~r~Vehicle Pursuit", "Suspect is fleeing at high speed! Proceed with caution.");
+                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911", "Dispatch", "~r~Vehicle Pursuit",
+                    "Suspect is fleeing at high speed! Proceed with caution.");
             }
             catch (Exception ex)
             {
@@ -159,7 +173,7 @@ namespace WhoSaidQuietCallouts.Callouts
             {
                 _callHandled = true;
                 Functions.PlayScannerAudio("CODE_4_ADAM COPY_THAT");
-                Game.DisplaySubtitle("~g~Suspect stopped. Issue citations or make arrest as necessary.");
+                Game.DisplaySubtitle("~g~Suspect stopped. Issue citations or make an arrest as necessary.");
             }
             catch (Exception ex)
             {
@@ -176,9 +190,9 @@ namespace WhoSaidQuietCallouts.Callouts
 
             try
             {
-                if (_vehicleBlip && _vehicleBlip.Exists()) _vehicleBlip.Delete();
-                if (_driver && _driver.Exists()) _driver.Dismiss();
-                if (_suspectVehicle && _suspectVehicle.Exists()) _suspectVehicle.Dismiss();
+                if (_vehicleBlip?.Exists() == true) _vehicleBlip.Delete();
+                if (_driver?.Exists() == true) _driver.Dismiss();
+                if (_suspectVehicle?.Exists() == true) _suspectVehicle.Dismiss();
             }
             catch (Exception ex)
             {
@@ -188,7 +202,8 @@ namespace WhoSaidQuietCallouts.Callouts
             _sceneActive = false;
             _callHandled = true;
 
-            Game.DisplayNotification("CHAR_POLICE", "CHAR_POLICE", "Dispatch", "Callout Completed", "Speeding vehicle handled successfully.");
+            Game.DisplayNotification("CHAR_POLICE", "CHAR_POLICE",
+                "Dispatch", "Callout Completed", "Speeding vehicle handled successfully.");
         }
     }
 }
