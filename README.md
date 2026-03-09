@@ -13,159 +13,168 @@ If you or someone you know struggles with thoughts of suicide or self‑harm, **
 ---
 
 This plugin is in early development at the moment, not ready for production.<br>
-Please keep an eye on this badge for status.
+Please keep an eye on this badge for build status and stability.
 
 ---
 
-# 🚔 Who Said Quiet Callouts (WSQ)  
+# 🚔 Who Said Quiet Callouts (WSQ)
 
-**Version:** 0.9.1 Alpha · Maintenance & Documentation Cleanup Build  
-**Release Date:** March 7 2026  
+**Version:** 0.9.5 Stable · Reflective Integration & Documentation Build  
+**Release Date:** March 9 2026  
 **Engine:** RAGE Plugin Hook · LSPDFR 0.4.9 Compatible  
 
 ---
 
-## 📜 Overview  
-Who Said Quiet Callouts (WSQ) is a modular, narrative‑driven callout pack for **LSPDFR** (Los Santos Police Department First Response) built around realism, AI depth, and seamless plugin interoperability.  
+## 📜 Overview
 
-By blending cinematic scenarios with advanced behavior logic, WSQ turns each dispatch into a unique story — shaped by your choices, response time, and AI conditions.
+Who Said Quiet Callouts (WSQ) is a modular, narrative‑driven callout pack for **LSPDFR** (Los Santos Police Department First Response) — designed around **realism**, **AI depth**, and **seamless plugin interoperability**.
+
+Each dispatch is built as a storyline: AI actors respond, adapt, and evolve based on player interaction, time of day, and available support systems.
 
 ---
 
 ## 🧩 Features
 
 ### 🎮 Core Gameplay  
-- **21 original callouts**, each crafted with dynamic AI and scenario branching.  
-- **Radiant AI Behavior Engine** (enforces Compliant / Fleeing / Hostile transitions).  
-- **Narrative dialogues** with realistic speech and situational responses.  
-- **Single Active Callout System** — prevents overlapping events.  
+- **21 unique callouts**, each with branching AI and reactive behavior.  
+- **Radiant AI Behavior Engine** adaptively switches Compliant / Fleeing / Hostile states.  
+- **Cinematic dialogue support** via Grammar Police and custom audio keys.  
+- **Single Active Callout System** to prevent conflicts with queued events.  
 - **Dynamic Dispatch Cooldown** (randomized 30–300 seconds).  
-- **Manual Callout Selection** through the Callout Interface (v1.9+).  
-- **Integrations with popular LSPDFR plugins** (see below).  
+- **Manual Launch Support** through Callout Interface (v1.9 +).  
+- **Full reflective plugin integration** architecture (no hard dependencies).  
 
 ---
 
-### 🔌 Integration Support  
-| Plugin | Function | Compatibility |
+## 🔌 Integration Support (v0.9.5)
+
+| Plugin | Functionality | Compatibility |
 |:--|:--|:--|
-| Stop The Ped (STP) | Advanced suspect control | ⚠ Conflicts with Policing Redefined |
-| Ultimate Backup (UB) | Backup & SWAT AI | ⚠ Conflicts with Policing Redefined |
-| Policing Redefined (PR) | AI pursuit overhaul | Replaces STP & UB |
-| CompuLite | Citation system & records integration | ✅ Safe |
-| Grammar Police | Dispatch / radio audio | ✅ Safe |
-| Reports+ | Enhanced incident reports | ✅ Safe |
-| LSPDFR Expanded | Additional agency & penal codes | ✅ Safe |
-| External Police Computer | Extended MDT UI System | ✅ Safe |
-| Callout Interface | Manual menu callout control | ✅ Safe |
+| Stop The Ped (STP) | Advanced suspect interaction API | ⚠ Conflicts with Policing Redefined |
+| Ultimate Backup (UB) | Backup / SWAT and responders | ⚠ Conflicts with Policing Redefined |
+| Policing Redefined (PR) | AI pursuit and morale system | Replaces STP & UB |
+| CompuLite | Records, citation and UI integration | ✅ Safe |
+| Grammar Police | Dispatch audio / radio dialogue | ✅ Safe |
+| Reports Plus | Custom callout reinforcement reports | ✅ Safe |
+| LSPDFR Expanded | Supplemental agency codes / laws | ✅ Safe |
+| External Police Computer | Extended MDT UI support | ✅ Safe |
+| Callout Interface | Manual callout selection / replay | ✅ Safe |
 
 ---
 
-## 🔥 Callout Library (v0.9.1 Alpha)
-*(All callouts enabled by default except Suicide Attempt.)*  
+## 🔥 Callout Library (v0.9.5 Stable)
+
+*(All enabled by default except Suicide Attempt)*  
 
 | # | Name | Description |
-|:--:|:--|:--|
-| 1 | Armed Robbery | Weapons drawn at local business — multi‑suspect setup. |
-| 2 | Pursuit Suspect | Join an active vehicle pursuit and assist. |
-| 3 | Domestic Disturbance | Verbal dispute with dynamic threat levels. |
-| 4 | Suspicious Vehicle | Investigate parked vehicle with drug activity. |
-| 5 | Kidnapping | Locate and rescue victim (urgent). |
-| 6 | Gang Shootout | Area‑wide armed conflict between NPC groups. |
-| 7 | Burglary | B&E in‑progress with compliance or flee variance. |
-| 8 | Animal Attack | Animal control assistance or protection response. |
-| 9 | Public Intoxication | Non‑lethal public disturbance handling. |
-| 10 | Stolen Vehicle | Locate and recover reported vehicle theft. |
-| 11 | Officer Down | Code 3 priority backup call. |
-| 12 | Road Rage | AI traffic aggression scenario. |
-| 13 | Barricaded Suspects | Tactical SWAT standoff event. |
-| 14 | Speeding Vehicle | Traffic enforcement scenario. |
-| 15 | Missing Person | Search callout with dialogue‑based outcomes. |
-| 16 | Drug Deal | Undercover observation and arrest scene. |
-| 17 | VIP Escort | Convoy protection mission. |
-| 18 | Traffic Stop Assist | Officer backup on traffic stop. |
-| 19 | Welfare Check | Residential safety check. |
-| 20 | Stolen Police Vehicle | Code 3 response to stolen marked unit. |
+|:-:|:--|:--|
+| 1 | Armed Robbery | Weapons drawn at local business; multi‑suspect setup. |
+| 2 | Pursuit Suspect | Join an in‑progress vehicle pursuit. |
+| 3 | Domestic Disturbance | Dynamic verbal dispute with escalating risk. |
+| 4 | Suspicious Vehicle | Investigate a parked drug or theft vehicle. |
+| 5 | Kidnapping | Locate and recover a kidnapped victim. |
+| 6 | Gang Shootout | Large‑scale armed conflict AI event. |
+| 7 | Burglary | Burglary in‑progress with compliance variance. |
+| 8 | Animal Attack | Respond to animal‑on‑civilian attacks. |
+| 9 | Public Intoxication | Handle minor disturbance or arrest. |
+| 10 | Stolen Vehicle | Vehicle recovery / tracking. |
+| 11 | Officer Down | Code 3 priority response. |
+| 12 | Road Rage | Aggressive driver intervention. |
+| 13 | Barricaded Suspects | Negotiation / SWAT scenario. |
+| 14 | Speeding Vehicle | Traffic stop or pursuit decision. |
+| 15 | Missing Person | Area search with dialogue prompts. |
+| 16 | Drug Deal | Stakeout and bust mission. |
+| 17 | VIP Escort | Convoy mission with AI protection. |
+| 18 | Traffic Stop Assist | Officer backup on routine stop. |
+| 19 | Welfare Check | Residential safety verification. |
+| 20 | Stolen Police Vehicle | Locate and recover stolen marked unit. |
 | 21 | 💬 Suicide Attempt | Optional sensitive callout (disabled by default). |
 
 ---
 
-## ⚙️ Compiling WSQ from Source  
+## ⚙️ Compiling From Source
 
-### 🧰 Requirements  
-- Microsoft Visual Studio 2019 or later  
-- .NET Framework 4.8 SDK  
-- RAGE Plugin Hook SDK (`LSPD_First_Response.dll` required)  
+### 🧰 Requirements
+- Visual Studio 2019 or later  
+- .NET Framework 4.8 SDK  
+- RAGE Plugin Hook SDK (`LSPD_First_Response.dll`)  
 
-### 🛠️ Steps  
-1. Clone or extract this repository.  
-2. Open `WhoSaidQuietCallouts.sln` in Visual Studio.  
-3. Copy reference DLL's to source directory:  
-   - `RagePluginHook.dll` - `LSPD_First_Response.dll` - `UltimateBackup.dll` - `StopThePed.dll` - `ReportsPlus.dll` - `CompuLite.dll` - `GrammarPolice.dll` - `PolicingRedefined.dll` - `LSPDFR_Expanded.dll` - `CalloutInterface.dll`
-5. Build solution (`Ctrl+Shift+B`).  
-6. Copy `WhoSaidQuietCallouts.dll` and `WhoSaidQuietCallouts.ini` to `GTA V/Plugins/LSPDFR`.  
+### 🛠️ Steps
+1. Clone or download this repository.  
+2. Open `WhoSaidQuietCallouts.sln` in Visual Studio.  
+3. Ensure reference DLLs are present:  
+ • `RagePluginHook.dll` • `LSPD_First_Response.dll`
+4. Build ( `Ctrl + Shift + B` ).  
+5. Copy output files:  
+ `WhoSaidQuietCallouts.dll` and `WhoSaidQuietCallouts.ini` → `Grand Theft Auto V/Plugins/LSPDFR`.  
 
-**PLEASE NOTE:** Integrations are optional within the game, but must be present at time of compile.
-If you have downloaded the latest release package, these DLL's are not required unless you choose
-to run the mods in your game session.
-
----
-
-## 💾 Installation  
-1. **Download** the compiled WSQ release.  
-2. Copy the following files into `Grand Theft Auto V/Plugins/LSPDFR/`:  
-   - `WhoSaidQuietCallouts.dll`  
-   - `WhoSaidQuietCallouts.ini`  
-3. Enable optional integrations in the INI file.  
-4. Start GTA V via RAGE Plugin Hook.  
+> **Note:** Integrations are optional in‑game, included in code reflectively. 
 
 ---
 
-## 🧠 Gameplay Tips  
-- Adjust callout frequency via cooldown range in INI.  
-- Avoid running StopThePed & Ultimate Backup with Policing Redefined simultaneously.
-- If you're running Policing Redefined, you'll likely want to use Reports+ or ExternalPoliceComputer, as Compulite is not supported.
-- You can launch specific calls through F10 (Callout Interface).  
-- Use `LogLevel=3` for debug testing.  
+## 💾 Installation
+
+1. Download the latest release from GitHub or LSPDFR forums.  
+2. Copy files to: `Grand Theft Auto V/Plugins/LSPDFR/`  
+ - `WhoSaidQuietCallouts.dll`  
+ - `WhoSaidQuietCallouts.ini`  
+3. Edit the INI to toggle optional callouts and plugin support.  
+4. Launch GTA V using RAGE Plugin Hook.  
 
 ---
 
-## 🧾 Changelog Summary  
-Full history available in [CHANGELOG.md](Docs/CHANGELOG.md).  
-**Latest:** v0.9.1 Alpha — Maintenance & Documentation Cleanup (Build 03/07/2026).  
+## 🧠 Gameplay Tips
+
+- Set dispatch cooldown range in the INI for frequency control.  
+- Avoid running **Stop The Ped** and **Ultimate Backup** when **Policing Redefined** is enabled (similar features overlap).  
+- If you use Policing Redefined, pair with **Reports Plus** or **External Police Computer** for record keeping; CompuLite is not supported by PR.  
+- You can manually launch callouts through `F10` (Callout Interface).  
+- Use `LogLevel = 3` for debug testing in logs.  
 
 ---
 
-## 🧑‍💻 Development Team  
+## 🧾 Changelog Summary
+
+See [Docs/CHANGELOG.md](Docs/CHANGELOG.md) for the complete log.  
+**Latest:** *Version 0.9.5 Stable — Reflective Integration & Maintenance Build (03/09/2026)*  
+
+---
+
+## 🧑‍💻 Development Team
+
 **Who Said Quiet Team**  
-- Lead Programming / Design · Project Lead  
-- AI Assistance · Galaxy AI (GPT‑5 Model by OpenAI)  
+- Lead Programming / Scenario Design · Project Lead  
+- AI Assistance · Galaxy AI (GPT‑5 by OpenAI)  
 - Testing / QA · Community Squad v2026  
 
 ---
 
-## 💬 Special Thanks  
-- **LSPDFR Team** – plugin API foundation.  
-- **Albo1125 / BejoIjo** – STP / UB inspiration & frameworks.  
-- **RAGE Plugin Hook Developers**.  
-- **Integration Authors** (STP, UB, PR, CompuLite, Grammar Police etc.).  
-- **Players and Testers** for ongoing support.  
+## 💬 Special Thanks
+
+- **LSPDFR Team** – plugin API foundation  
+- **Albo1125 / BejoIjo** – Stop The Ped / Ultimate Backup frameworks  
+- **RAGE Plugin Hook Developers**  
+- **Integration Authors** (STP, UB, PR, CompuLite, Grammar Police, Reports Plus)  
+- **Community Testers and Players** for support and feedback  
 
 ---
 
-## 📬 Support & Feedback  
-Report issues on GitHub or via LSPDFR forums (thread TBA).  
-Include `Plugins/LSPDFR/Logs/WhoSaidQuietCallouts.txt` in tickets.  
+## 📬 Support & Feedback
+
+- Submit issues on GitHub or LSPDFR forums (thread TBA).  
+- Attach `Plugins/LSPDFR/Logs/WhoSaidQuietCallouts.txt` when reporting bugs.  
 
 ---
 
-## 🏁 License  
-Licensed under [CC BY‑NC 4.0 Non‑Commercial Attribution License](Docs/LICENSE.md).  
-Redistribution with credit only · No commercial use.  
+## 🏁 License
+
+Licensed under [CC BY‑NC 4.0 Non‑Commercial Attribution](Docs/LICENSE.md).  
+Redistribution allowed with credit; commercial use prohibited.  
 
 ---
 
-## 🪟 Platform Warning (Windows Only)
-This project is **released and supported for Windows only**.  
-If you are running WSQ under emulation or compatibility layers such as **Wine, Proton, or Crossover on Linux or macOS** this is **unsupported**.
-Use of third‑party wrappers may cause instability or data loss and is done **solely at the user’s own risk**.  
-No technical support or issue tracking is offered for non‑Windows environments.  
+## 🪟 Platform Support Notice (Windows Only)
+
+WSQ is officially supported for **Windows** platforms only.  
+Running under emulation (Wine, Proton, Crossover etc.) is **unsupported** and at the user’s own risk.  
+No official technical support or issue tracking is offered for non‑Windows environments.  
