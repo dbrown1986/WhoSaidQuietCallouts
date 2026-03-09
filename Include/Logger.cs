@@ -6,8 +6,8 @@ namespace WhoSaidQuietCallouts.Core
 {
     /// <summary>
     /// Logger.cs
-    /// Version: 0.9.1 Alpha (Maintenance & Documentation Cleanup Build)
-    /// Date: March 7, 2026
+    /// Version: 0.9.5 Stable (Reflective Integration Unified Logging)
+    /// Date: March 9 2026
     /// Author: Who Said Quiet Team
     ///
     /// Description:
@@ -39,7 +39,7 @@ namespace WhoSaidQuietCallouts.Core
                     Directory.CreateDirectory(_logDirectory);
 
                 WriteFileSeparator();
-                WritePlain($"[INIT] Who Said Quiet Callouts Logger initialized ({DateTime.Now:MMMM dd, yyyy HH:mm:ss}).");
+                WritePlain($"[INIT] Who Said Quiet Callouts Logger initialized (v0.9.5‑stable, {DateTime.Now:MMMM dd, yyyy HH:mm:ss}).");
 
                 _initialized = true;
             }

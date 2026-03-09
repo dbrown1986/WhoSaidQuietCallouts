@@ -7,16 +7,14 @@ namespace WhoSaidQuietCallouts.Integration
 {
     /// <summary>
     /// CalloutInterfaceIntegration.cs
-    /// Version: 0.9.1 Alpha (Modular Reflection Build)
-    /// Date: March 9, 2026
-    /// Author: Who Said Quiet Team
+    /// Version: 0.9.5 Stable (Reflective Integration / Optional Plugin Bridge)
+    /// Date: March 9 2026
+    /// Author: Who Said Quiet Team
     ///
     /// Description:
-    ///  Provides runtime / optional integration with FinKone’s Callout Interface plugin.
-    ///  Uses reflection to check for CalloutInterface.dll and registers WSQ callouts if available.
-    ///
-    ///  No direct hard reference is required; ensures safe compilation when the user
-    ///  does not have the external Callout Interface installed.
+    ///  Dynamically integrates WSQ callouts with FinKone’s Callout Interface plugin (if present).
+    ///  Uses reflection to mirror the reflective WSQ Callout Registry (CalloutRegistrar)
+    ///  automatically — no hard dependencies required.
     /// </summary>
     public static class CalloutInterfaceIntegration
     {
@@ -25,7 +23,7 @@ namespace WhoSaidQuietCallouts.Integration
         private static MethodInfo _registerMethod;
 
         /// <summary>
-        /// Attempts to detect Callout Interface and retrieve its registration method.
+        /// Attempts to detect Callout Interface and retrieve its registration method.
         /// </summary>
         public static void Initialize()
         {
@@ -36,69 +34,73 @@ namespace WhoSaidQuietCallouts.Integration
 
                 if (ciAssembly == null)
                 {
-                    Game.LogTrivial("[WSQ][CI] CalloutInterface.dll not found — integration skipped.");
+                    Game.LogTrivial("[WSQ][CI][v0.9.5] CalloutInterface.dll not found — integration skipped.");
                     _available = false;
                     return;
                 }
 
-                // Locate the main API class type
+                // Locate the main API class type
                 _functionsType = ciAssembly.GetType("CalloutInterface.API.CalloutInterfaceFunctions");
                 if (_functionsType == null)
                 {
-                    Game.LogTrivial("[WSQ][CI] API type not found inside assembly — skipping integration.");
+                    Game.LogTrivial("[WSQ][CI][v0.9.5] API type not found inside assembly — skipping integration.");
                     _available = false;
                     return;
                 }
 
-                // Get the static RegisterCallout(Type calloutType) method
+                // Get the static RegisterCallout(Type calloutType) method
                 _registerMethod = _functionsType.GetMethod("RegisterCallout", new[] { typeof(Type) });
                 if (_registerMethod == null)
                 {
-                    Game.LogTrivial("[WSQ][CI] RegisterCallout(Type) method not found — skipping integration.");
+                    Game.LogTrivial("[WSQ][CI][v0.9.5] RegisterCallout(Type) method not found — skipping integration.");
                     _available = false;
                     return;
                 }
 
                 _available = true;
-                Game.LogTrivial("[WSQ][CI] Callout Interface integration initialized successfully.");
+                Game.LogTrivial("[WSQ][CI][v0.9.5] Callout Interface integration initialized successfully.");
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][CI] Initialize Exception: " + ex.Message);
+                Game.LogTrivial("[WSQ][CI][v0.9.5] Initialize Exception: " + ex.Message);
                 _available = false;
             }
         }
 
         /// <summary>
-        /// Registers all WSQ callouts with Callout Interface, if available.
-        /// Safe to call even if the assembly doesn't exist.
+        /// Registers all WSQ callouts with Callout Interface, if available.
+        /// Safe to call even if assembly doesn’t exist.
         /// </summary>
         public static void RegisterAllCallouts()
         {
             if (!_available)
             {
-                Game.LogTrivial("[WSQ][CI] Not available — skipping callout registration.");
+                Game.LogTrivial("[WSQ][CI][v0.9.5] Not available — skipping callout registration.");
                 return;
             }
 
             try
             {
-                RegisterCalloutSafe(typeof(WhoSaidQuietCallouts.Callouts.PublicIntoxication));
-                RegisterCalloutSafe(typeof(WhoSaidQuietCallouts.Callouts.Burglary));
-                RegisterCalloutSafe(typeof(WhoSaidQuietCallouts.Callouts.SuicideAttempt));
-                RegisterCalloutSafe(typeof(WhoSaidQuietCallouts.Callouts.DomesticDisturbance));
-                // Add more WSQ callouts here as needed
+                // Reflective registration — use the same callout list as CalloutRegistrar
+                foreach (var name in WhoSaidQuietCallouts.CalloutRegistrar.CalloutClassNames)
+                {
+                    Type calloutType = Type.GetType(name);
+                    if (calloutType != null)
+                        RegisterCalloutSafe(calloutType);
+                    else
+                        Game.LogTrivial($"[WSQ][CI][v0.9.5] Could not resolve type: {name}");
+                }
 
-                Game.LogTrivial("[WSQ][CI] All WSQ callouts registered through Callout Interface.");
+                Game.LogTrivial("[WSQ][CI][v0.9.5] All WSQ callouts registered through Callout Interface.");
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][CI] RegisterAllCallouts Exception: " + ex.Message);
+                Game.LogTrivial("[WSQ][CI][v0.9.5] RegisterAllCallouts Exception: " + ex.Message);
             }
         }
 
         /// <summary>
-        /// Safely invokes the reflection‑based RegisterCallout method.
+        /// Safely invokes the reflection‑based RegisterCallout method.
         /// </summary>
         private static void RegisterCalloutSafe(Type calloutType)
         {
@@ -107,16 +109,16 @@ namespace WhoSaidQuietCallouts.Integration
             try
             {
                 _registerMethod.Invoke(null, new object[] { calloutType });
-                Game.LogTrivial($"[WSQ][CI] Registered callout: {calloutType.Name}");
+                Game.LogTrivial($"[WSQ][CI][v0.9.5] Registered callout: {calloutType.Name}");
             }
             catch (Exception ex)
             {
-                Game.LogTrivial($"[WSQ][CI] Failed to register {calloutType.Name}: {ex.Message}");
+                Game.LogTrivial($"[WSQ][CI][v0.9.5] Failed to register {calloutType.Name}: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Reports whether Callout Interface integration is active and working.
+        /// Reports whether Callout Interface integration is active and working.
         /// </summary>
         public static bool IsAvailable => _available;
     }

@@ -5,15 +5,14 @@ namespace WhoSaidQuietCallouts.Core
 {
     /// <summary>
     /// CompuLiteIntegration.cs
-    /// Version: 0.9.1 Alpha (Maintenance & Documentation Cleanup Build)
-    /// Date: March 7, 2026
-    /// Author: Who Said Quiet Team
-    /// 
+    /// Version: 0.9.5 Stable (Reflective Integration / External Plugin Bridge)
+    /// Date: March 9 2026
+    /// Author: Who Said Quiet Team
+    ///
     /// Description:
-    ///  Provides optional integration with the CompuLite plugin. 
-    ///  When available, it registers callouts and metadata for display 
-    ///  within CompuLite's user interface, providing officers with 
-    ///  enhanced in-game records and callout previews.
+    ///  Provides optional reflective integration with the CompuLite plugin. 
+    ///  When available, registers WSQ callout metadata for display within 
+    ///  CompuLite’s in‑game interface, enabling enhanced records and callout previews.
     /// </summary>
     public static class CompuLiteIntegration
     {

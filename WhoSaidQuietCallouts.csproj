@@ -43,51 +43,54 @@
       <HintPath>.\RagePluginHook.dll</HintPath>
     </Reference>
     <Reference Include="LSPD_First_Response">
-      <HintPath>.\LSPD_First_Response.dll</HintPath>
+      <HintPath>.\LSPD First Response.dll</HintPath>
     </Reference>
     <!-- .NET Base Libraries -->
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+	<Reference Include="System.Windows.Forms" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <!-- ================== OPTIONAL INTEGRATION DLLs ================== -->
-  <ItemGroup>
+  <!-- The following references have been converted to reflective, 
+	   the code has been left here and commented for backup -->
+  <!-- <ItemGroup> -->
     <!-- 1. Ultimate Backup -->
-    <Reference Include="System.Windows.Forms" />
+    <!-- <Reference Include="System.Windows.Forms" />
     <Reference Include="UltimateBackup">
       <HintPath>.\UltimateBackup.dll</HintPath>
       <Private>false</Private>
-    </Reference>
+    </Reference> -->
     <!-- 2. Stop The Ped -->
-    <Reference Include="StopThePed">
+<!--    <Reference Include="StopThePed">
       <HintPath>.\StopThePed.dll</HintPath>
       <Private>false</Private>
-    </Reference>
+    </Reference> -->
     <!-- 3. Reports Plus -->
-    <Reference Include="ReportsPlus">
+<!--    <Reference Include="ReportsPlus">
       <HintPath>.\ReportsPlus.dll</HintPath>
       <Private>false</Private>
-    </Reference>
+    </Reference> -->
     <!-- 4. CompuLite -->
     <!-- 5. Grammar Police -->
-    <Reference Include="GrammarPolice">
+<!--    <Reference Include="GrammarPolice">
       <HintPath>.\GrammarPolice.dll</HintPath>
       <Private>false</Private>
-    </Reference>
+    </Reference> -->
     <!-- 6. Policing Redefined -->
-    <Reference Include="PolicingRedefined">
+<!--    <Reference Include="PolicingRedefined">
       <HintPath>.\PolicingRedefined.dll</HintPath>
       <Private>false</Private>
-    </Reference>
+    </Reference> -->
     <!-- 7. LSPDFR Expanded -->
     <!-- 8. Callout Interface -->
-    <Reference Include="CalloutInterface">
+<!--    <Reference Include="CalloutInterface">
       <HintPath>.\CalloutInterface.dll</HintPath>
       <Private>false</Private>
     </Reference>
-  </ItemGroup>
+  </ItemGroup> -->
   <!-- =================== SOURCE FILES =================== -->
   <ItemGroup>
     <!-- Automatically include all .cs files in subfolders -->

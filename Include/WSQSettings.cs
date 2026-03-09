@@ -6,9 +6,9 @@ namespace WhoSaidQuietCallouts.Core
 {
     /// <summary>
     /// WSQSettings.cs (Settings Manager)
-    /// Version: 0.9.1 Alpha (Compatibility Build)
-    /// Date: March 9, 2026
-    /// Author: Who Said Quiet Team
+    /// Version: 0.9.5 Stable (Reflective Integration / Radar–GPS Preference Synced)
+    /// Date: March 9 2026
+    /// Author: Who Said Quiet Team
     /// </summary>
     public static class WSQSettings
     {
@@ -22,17 +22,40 @@ namespace WhoSaidQuietCallouts.Core
         public static int LogLevel { get; private set; } = 1;
         public static int MinCalloutCooldownSeconds { get; private set; } = 30;
         public static int MaxCalloutCooldownSeconds { get; private set; } = 300;
+        public static bool UseRadarBlipsInsteadOfGPS { get; private set; } = false;
 
         // ───── Integrations ─────
-        public static bool StopThePed { get; private set; }
-        public static bool CompuLite { get; private set; }
-        public static bool GrammarPolice { get; private set; }
-        public static bool CalloutInterface { get; private set; }
-        public static bool UltimateBackup { get; private set; }
-        public static bool LSPDFRExpanded { get; private set; }
-        public static bool PolicingRedefined { get; private set; }
-        public static bool ReportsPlus { get; private set; }
-        public static bool ExternalPoliceComputer { get; private set; }
+        public static bool AllowStopThePed { get; private set; }
+        public static bool AllowCompuLite { get; private set; }
+        public static bool AllowGrammarPolice { get; private set; }
+        public static bool AllowCalloutInterface { get; private set; }
+        public static bool AllowUltimateBackup { get; private set; }
+        public static bool AllowLSPDFRExpanded { get; private set; }
+        public static bool AllowPolicingRedefined { get; private set; }
+        public static bool AllowReportsPlus { get; private set; }
+        public static bool AllowExternalPoliceComputer { get; private set; }
+
+        // ───── Callouts ─────
+        public static bool ArmedRobbery { get; private set; } = true;
+        public static bool PursuitSuspect { get; private set; } = true;
+        public static bool DomesticDisturbance { get; private set; } = true;
+        public static bool SuspiciousVehicle { get; private set; } = true;
+        public static bool Kidnapping { get; private set; } = true;
+        public static bool GangShootout { get; private set; } = true;
+        public static bool Burglary { get; private set; } = true;
+        public static bool AnimalAttack { get; private set; } = true;
+        public static bool PublicIntoxication { get; private set; } = true;
+        public static bool StolenVehicle { get; private set; } = true;
+        public static bool OfficerDown { get; private set; } = true;
+        public static bool RoadRage { get; private set; } = true;
+        public static bool BarricadedSuspects { get; private set; } = true;
+        public static bool SpeedingVehicle { get; private set; } = true;
+        public static bool MissingPerson { get; private set; } = true;
+        public static bool DrugDeal { get; private set; } = true;
+        public static bool VIPEscort { get; private set; } = true;
+        public static bool TrafficStopAssist { get; private set; } = true;
+        public static bool WelfareCheck { get; private set; } = true;
+        public static bool StolenPoliceVehicle { get; private set; } = true;
 
         // ───── SuicideCallout ─────
         public static bool SuicideAttempt { get; private set; }
@@ -42,10 +65,10 @@ namespace WhoSaidQuietCallouts.Core
 
         private static bool _initialized;
 
+        // ──────────────────────────────────────────────────────────────────
         public static void Initialize()
         {
             if (_initialized) return;
-
             try
             {
                 if (!Directory.Exists(_settingsFolder))
@@ -71,10 +94,11 @@ namespace WhoSaidQuietCallouts.Core
         {
             try
             {
-                foreach (var raw in File.ReadAllLines(_settingsFile))
+                foreach (string raw in File.ReadAllLines(_settingsFile))
                 {
                     string line = raw.Trim();
-                    if (string.IsNullOrEmpty(line) || line.StartsWith(";") || line.StartsWith("#") || line.StartsWith("["))
+                    if (string.IsNullOrEmpty(line) || line.StartsWith(";") ||
+                        line.StartsWith("#") || line.StartsWith("["))
                         continue;
 
                     string[] parts = line.Split('=');
@@ -86,31 +110,52 @@ namespace WhoSaidQuietCallouts.Core
                     switch (key)
                     {
                         // --- General ---
-                        case "EnableLogging":
-                            EnableLogging = ParseBool(val); break;
+                        case "EnableLogging": EnableLogging = ParseBool(val); break;
                         case "LogLevel":
-                            if (int.TryParse(val, out int logLevel))
-                                LogLevel = Clamp(logLevel, 0, 3);
+                            if (int.TryParse(val, out int log)) LogLevel = Clamp(log, 0, 3);
                             break;
                         case "MinCalloutCooldownSeconds":
-                            if (int.TryParse(val, out int min))
-                                MinCalloutCooldownSeconds = Clamp(min, 5, 900);
+                            if (int.TryParse(val, out int min)) MinCalloutCooldownSeconds = Clamp(min, 5, 900);
                             break;
                         case "MaxCalloutCooldownSeconds":
-                            if (int.TryParse(val, out int max))
-                                MaxCalloutCooldownSeconds = Clamp(max, 10, 1800);
+                            if (int.TryParse(val, out int max)) MaxCalloutCooldownSeconds = Clamp(max, 10, 1800);
+                            break;
+                        case "UseRadarBlipsInsteadOfGPS":
+                            UseRadarBlipsInsteadOfGPS = ParseBool(val);
                             break;
 
                         // --- Integrations ---
-                        case "StopThePed": StopThePed = ParseBool(val); break;
-                        case "CompuLite": CompuLite = ParseBool(val); break;
-                        case "GrammarPolice": GrammarPolice = ParseBool(val); break;
-                        case "CalloutInterface": CalloutInterface = ParseBool(val); break;
-                        case "UltimateBackup": UltimateBackup = ParseBool(val); break;
-                        case "LSPDFRExpanded": LSPDFRExpanded = ParseBool(val); break;
-                        case "PolicingRedefined": PolicingRedefined = ParseBool(val); break;
-                        case "ReportsPlus": ReportsPlus = ParseBool(val); break;
-                        case "ExternalPoliceComputer": ExternalPoliceComputer = ParseBool(val); break;
+                        case "StopThePed": AllowStopThePed = ParseBool(val); break;
+                        case "CompuLite": AllowCompuLite = ParseBool(val); break;
+                        case "GrammarPolice": AllowGrammarPolice = ParseBool(val); break;
+                        case "CalloutInterface": AllowCalloutInterface = ParseBool(val); break;
+                        case "UltimateBackup": AllowUltimateBackup = ParseBool(val); break;
+                        case "LSPDFRExpanded": AllowLSPDFRExpanded = ParseBool(val); break;
+                        case "PolicingRedefined": AllowPolicingRedefined = ParseBool(val); break;
+                        case "ReportsPlus": AllowReportsPlus = ParseBool(val); break;
+                        case "ExternalPoliceComputer": AllowExternalPoliceComputer = ParseBool(val); break;
+
+                        // --- Callouts ---
+                        case "ArmedRobbery": ArmedRobbery = ParseBool(val); break;
+                        case "PursuitSuspect": PursuitSuspect = ParseBool(val); break;
+                        case "DomesticDisturbance": DomesticDisturbance = ParseBool(val); break;
+                        case "SuspiciousVehicle": SuspiciousVehicle = ParseBool(val); break;
+                        case "Kidnapping": Kidnapping = ParseBool(val); break;
+                        case "GangShootout": GangShootout = ParseBool(val); break;
+                        case "Burglary": Burglary = ParseBool(val); break;
+                        case "AnimalAttack": AnimalAttack = ParseBool(val); break;
+                        case "PublicIntoxication": PublicIntoxication = ParseBool(val); break;
+                        case "StolenVehicle": StolenVehicle = ParseBool(val); break;
+                        case "OfficerDown": OfficerDown = ParseBool(val); break;
+                        case "RoadRage": RoadRage = ParseBool(val); break;
+                        case "BarricadedSuspects": BarricadedSuspects = ParseBool(val); break;
+                        case "SpeedingVehicle": SpeedingVehicle = ParseBool(val); break;
+                        case "MissingPerson": MissingPerson = ParseBool(val); break;
+                        case "DrugDeal": DrugDeal = ParseBool(val); break;
+                        case "VIPEscort": VIPEscort = ParseBool(val); break;
+                        case "TrafficStopAssist": TrafficStopAssist = ParseBool(val); break;
+                        case "WelfareCheck": WelfareCheck = ParseBool(val); break;
+                        case "StolenPoliceVehicle": StolenPoliceVehicle = ParseBool(val); break;
 
                         // --- SuicideCallout ---
                         case "SuicideAttempt": SuicideAttempt = ParseBool(val); break;
@@ -135,14 +180,26 @@ namespace WhoSaidQuietCallouts.Core
                 {
                     w.WriteLine("; =======================================================================");
                     w.WriteLine("; WHO SAID QUIET CALLOUTS - CONFIGURATION FILE");
-                    w.WriteLine("; Version: 0.9.1 Alpha (Compatibility Build)");
+                    w.WriteLine("; Version: 0.9.4 Stable (Reflective Integration Sync Build)");
                     w.WriteLine($"; Date: {DateTime.Now:MMMM dd, yyyy}");
                     w.WriteLine("; -----------------------------------------------------------------------");
+                    w.WriteLine("; This file controls global plugin settings, integrations, and callout behavior.");
+                    w.WriteLine("; Comments (lines starting with ';') are ignored by the plugin.");
+                    w.WriteLine("; =======================================================================");
+                    w.WriteLine();
                     w.WriteLine("[General]");
+                    w.WriteLine("; Enables or disables log file creation.");
                     w.WriteLine("EnableLogging=true");
+                    w.WriteLine("; Sets the level of verbosity for log output: 0=Normal 3=FullDebug");
                     w.WriteLine("LogLevel=1");
+                    w.WriteLine("; Randomized delay range between callouts (seconds)");
                     w.WriteLine("MinCalloutCooldownSeconds=30");
                     w.WriteLine("MaxCalloutCooldownSeconds=300");
+                    w.WriteLine();
+                    w.WriteLine("; Determines navigation assist type for callouts.");
+                    w.WriteLine("; true  = use radar blips only (adds challenge)");
+                    w.WriteLine("; false = use GPS route guidance (default)");
+                    w.WriteLine("UseRadarBlipsInsteadOfGPS=false");
                     w.WriteLine();
                     w.WriteLine("[Integrations]");
                     w.WriteLine("StopThePed=false");
@@ -154,6 +211,28 @@ namespace WhoSaidQuietCallouts.Core
                     w.WriteLine("PolicingRedefined=false");
                     w.WriteLine("ReportsPlus=false");
                     w.WriteLine("ExternalPoliceComputer=false");
+                    w.WriteLine();
+                    w.WriteLine("[Callouts]");
+                    w.WriteLine("ArmedRobbery=true");
+                    w.WriteLine("PursuitSuspect=true");
+                    w.WriteLine("DomesticDisturbance=true");
+                    w.WriteLine("SuspiciousVehicle=true");
+                    w.WriteLine("Kidnapping=true");
+                    w.WriteLine("GangShootout=true");
+                    w.WriteLine("Burglary=true");
+                    w.WriteLine("AnimalAttack=true");
+                    w.WriteLine("PublicIntoxication=true");
+                    w.WriteLine("StolenVehicle=true");
+                    w.WriteLine("OfficerDown=true");
+                    w.WriteLine("RoadRage=true");
+                    w.WriteLine("BarricadedSuspects=true");
+                    w.WriteLine("SpeedingVehicle=true");
+                    w.WriteLine("MissingPerson=true");
+                    w.WriteLine("DrugDeal=true");
+                    w.WriteLine("VIPEscort=true");
+                    w.WriteLine("TrafficStopAssist=true");
+                    w.WriteLine("WelfareCheck=true");
+                    w.WriteLine("StolenPoliceVehicle=true");
                     w.WriteLine();
                     w.WriteLine("[SuicideCallout]");
                     w.WriteLine("SuicideAttempt=false");
@@ -168,10 +247,9 @@ namespace WhoSaidQuietCallouts.Core
             }
         }
 
-        private static bool ParseBool(string v) =>
-            v.Equals("true", StringComparison.OrdinalIgnoreCase);
+        private static bool ParseBool(string v)
+            => v.Equals("true", StringComparison.OrdinalIgnoreCase);
 
-        // ✅ Manual clamp works in .NET 4.8
         private static int Clamp(int value, int min, int max)
         {
             if (value < min) return min;
@@ -179,6 +257,23 @@ namespace WhoSaidQuietCallouts.Core
             return value;
         }
 
+        // ───── Integration Helper ─────
+        public static bool IsIntegrationEnabled(string name)
+        {
+            return name switch
+            {
+                "StopThePed" => AllowStopThePed && PluginBridge.IsPluginLoaded("StopThePed"),
+                "UltimateBackup" => AllowUltimateBackup && PluginBridge.IsPluginLoaded("UltimateBackup"),
+                "ReportsPlus" => AllowReportsPlus && PluginBridge.IsPluginLoaded("ReportsPlus"),
+                "CompuLite" => AllowCompuLite && PluginBridge.IsPluginLoaded("CompuLite"),
+                "GrammarPolice" => AllowGrammarPolice && PluginBridge.IsPluginLoaded("GrammarPolice"),
+                "CalloutInterface" => AllowCalloutInterface && PluginBridge.IsPluginLoaded("CalloutInterface"),
+                "LSPDFRExpanded" => AllowLSPDFRExpanded && PluginBridge.IsPluginLoaded("LSPDFRExpanded"),
+                "PolicingRedefined" => AllowPolicingRedefined && PluginBridge.IsPluginLoaded("PolicingRedefined"),
+                "ExternalPoliceComputer" => AllowExternalPoliceComputer && PluginBridge.IsPluginLoaded("ExternalPoliceComputer"),
+                _ => false,
+            };
+        }
         public static void Reload()
         {
             try
@@ -198,7 +293,8 @@ namespace WhoSaidQuietCallouts.Core
         {
             return $"[WSQ Settings] LogLevel={LogLevel}, " +
                    $"Cooldown={MinCalloutCooldownSeconds}-{MaxCalloutCooldownSeconds}s, " +
-                   $"UB={UltimateBackup}, STP={StopThePed}, GP={GrammarPolice}, Suicide={SuicideAttempt}";
+                   $"UB={AllowUltimateBackup}, STP={AllowStopThePed}, GP={AllowGrammarPolice}, " +
+                   $"CalloutsEnabled={true}, Suicide={SuicideAttempt}";
         }
     }
 }

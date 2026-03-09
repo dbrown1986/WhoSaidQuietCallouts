@@ -6,7 +6,8 @@ namespace WhoSaidQuietCallouts
 {
     /// <summary>
     /// WSQCalloutBase.cs
-    /// Version: 0.9.0 Base Framework (shared foundation for WSQ callouts)
+    /// Version: 0.9.5 Stable (Reflective Integration Compatible / Navigation Unification)
+    /// Updated: March 9 2026 by Who Said Quiet Team
     /// Provides unified logging, safe cleanup, and player-controlled callout ending.
     /// </summary>
     public abstract class WSQCalloutBase : Callout
@@ -53,6 +54,40 @@ namespace WhoSaidQuietCallouts
                 }
             }
         }
+
+#if false
+        /// <summary>
+        /// Future helper: automatically sets radar or GPS navigation
+        /// based on WSQSettings.UseRadarBlipsInsteadOfGPS.
+        /// Currently disabled for manual control.
+        /// </summary>
+        protected Blip SetupNavigation(Vector3 position, string name, System.Drawing.Color color, float radius = 40f)
+        {
+            if (WSQSettings.UseRadarBlipsInsteadOfGPS)
+            {
+                Blip radarBlip = new Blip(position, radius)
+                {
+                    Color = color,
+                    Alpha = 0.8f,
+                    Name = name
+                };
+                Game.DisplayHelp($"Radar blip set. Navigate manually to the {name.ToLower()}.");
+                return radarBlip;
+            }
+            else
+            {
+                // GPS route logic (currently inactive)
+                Blip routeBlip = new Blip(position)
+                {
+                    Color = System.Drawing.Color.Purple,
+                    Name = $"GPS Route to {name}"
+                };
+                routeBlip.IsRouteEnabled = true;
+                Game.DisplayHelp($"GPS route set to the ~b~{name.ToLower()}~s~ location.");
+                return null;
+            }
+        }
+#endif
 
         public override void End()
         {

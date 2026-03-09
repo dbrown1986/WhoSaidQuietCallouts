@@ -4,6 +4,10 @@ using System.Linq;
 using Rage;
 
 namespace WhoSaidQuietCallouts.Core
+
+/// Version: 0.9.5 Stable (Utility Compatibility Verified)
+/// Updated: March 9 2026 by Who Said Quiet Team
+
 {
     public static class Utilities
     {

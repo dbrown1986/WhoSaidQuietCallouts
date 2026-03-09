@@ -4,21 +4,20 @@ using Rage;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
 using WhoSaidQuietCallouts;
+using WhoSaidQuietCallouts.Core;  // ✅ Added for WSQSettings reference
 
 namespace WhoSaidQuietCallouts.Callouts
 {
     /// <summary>
     /// VIPEscort.cs
-    /// Version: 0.9.1 Alpha (Maintenance & Documentation Cleanup Build)
-    /// Date: March 7, 2026
-    /// Author: Who Said Quiet Team
+    /// Version: 0.9.5 Stable (Navigation Preference / Reflective Integration / Player‑Controlled End)
+    /// Updated March 9 2026 by Who Said Quiet Team.
     ///
     /// Description:
-    ///  A high-profile individual requires safe escort from one location to another.
-    ///  Player must provide motorcade protection while ensuring the VIP’s vehicle
-    ///  reaches the destination safely.  Possible threats may appear en route.
+    ///  Escort a high‑profile individual to safety. Maintain motorcade protection and react to possible ambushes.
+    ///  Adds reflective integration for backup and AI behavior control.
     /// </summary>
-    [CalloutInfo("VIP Escort", CalloutProbability.Medium)]
+    [CalloutInfo("VIP Escort", CalloutProbability.Medium)]
     public class VIPEscort : WSQCalloutBase
     {
         private Vector3 _pickupLocation;
@@ -27,64 +26,101 @@ namespace WhoSaidQuietCallouts.Callouts
         private Ped _vip;
         private Blip _pickupBlip;
         private Blip _destinationBlip;
+        private Blip _routeBlip;
+
         private bool _escortStarted;
         private bool _sceneActive;
         private bool _callHandled;
-        private Random _rng = new Random();
-        private List<Ped> _attackers = new List<Ped>();
+
+        private readonly Random _rng = new Random();
+        private readonly List<Ped> _attackers = new List<Ped>();
 
         public override bool OnBeforeCalloutDisplayed()
         {
             try
             {
-                Vector3 playerPos = Game.LocalPlayer.Character.Position;
-                _pickupLocation = World.GetNextPositionOnStreet(playerPos.Around(600f));
-                _destination = World.GetNextPositionOnStreet(playerPos.Around(1200f));
+                Vector3 player = Game.LocalPlayer.Character.Position;
+                _pickupLocation = World.GetNextPositionOnStreet(player.Around(600f));
+                _destination = World.GetNextPositionOnStreet(player.Around(1200f));
 
-                CalloutMessage = "VIP Escort Requested";
+                CalloutMessage = "VIP Escort Requested";
                 CalloutPosition = _pickupLocation;
                 ShowCalloutAreaBlipBeforeAccepting(_pickupLocation, 100f);
 
-                Functions.PlayScannerAudioUsingPosition("CITIZENS_REPORT VIP_REQUIRING_ESCORT IN_OR_ON_POSITION", _pickupLocation);
-                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911", "Dispatch", "~b~VIP Escort", "Protect the assigned VIP and escort them safely to the destination.");
+                Functions.PlayScannerAudioUsingPosition("CITIZENS_REPORT VIP_REQUIRING_ESCORT IN_OR_ON_POSITION", _pickupLocation);
+                Game.DisplayNotification("CHAR_CALL911", "CHAR_CALL911", "Dispatch",
+                    "~b~VIP Escort", "Protect the assigned VIP and escort them safely to the destination.");
                 return base.OnBeforeCalloutDisplayed();
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][VIPEscort] OnBeforeCalloutDisplayed Exception: " + ex);
+                Game.LogTrivial("[WSQ][VIPEscort] OnBeforeCalloutDisplayed Exception: " + ex);
                 return false;
             }
         }
 
         public override bool OnCalloutAccepted()
         {
-            Game.LogTrivial("[WSQ][VIPEscort] Callout accepted.");
+            Game.LogTrivial("[WSQ][VIPEscort] Callout accepted.");
             try
             {
-                // Create VIP vehicle and passenger
-                _vipVehicle = new Vehicle("SCHAFTER2", _pickupLocation)
-                {
-                    IsPersistent = true
-                };
+                _vipVehicle = new Vehicle("SCHAFTER2", _pickupLocation);
+                _vipVehicle.IsPersistent = true;
 
                 _vip = _vipVehicle.CreateRandomDriver();
+                if (!_vip || !_vip.Exists())
+                {
+                    PlayerControlledEnd();
+                    return false;
+                }
+
                 _vip.IsPersistent = true;
                 _vip.BlockPermanentEvents = false;
-
                 _vip.Inventory.GiveNewWeapon("WEAPON_PISTOL", 60, true);
-                _pickupBlip = _vipVehicle.AttachBlip();
-                _pickupBlip.Color = System.Drawing.Color.Blue;
-                _pickupBlip.Name = "VIP Pickup Point";
+
+                // ─── Navigation Preference ───
+                if (WSQSettings.UseRadarBlipsInsteadOfGPS)
+                {
+                    _pickupBlip = new Blip(_pickupLocation, 100f)
+                    {
+                        Color = System.Drawing.Color.Blue,
+                        Name = "VIP Pickup Zone",
+                        Alpha = 0.7f
+                    };
+                    Game.DisplayHelp("Radar blip set. Navigate manually to pick up the VIP.");
+                    _routeBlip = _pickupBlip;
+                }
+                else
+                {
+                    Blip gpsRoute = new Blip(_pickupLocation)
+                    {
+                        Color = System.Drawing.Color.Purple,
+                        Name = "GPS Route to VIP Pickup"
+                    };
+                    gpsRoute.IsRouteEnabled = true;
+                    Game.DisplayHelp("GPS route set to the ~b~VIP pickup point~s~.");
+                    _routeBlip = gpsRoute;
+                }
 
                 _sceneActive = true;
-
-                Game.DisplayHelp("Proceed to the ~b~pickup location~w~ and meet the VIP for escort duty.");
+                Game.DisplayHelp("Proceed to the ~b~pickup location~s~ and begin the escort operation.");
                 Functions.PlayScannerAudio("UNITS_RESPOND_CODE_2");
+
+                // Optional backup support
+                if (PluginBridge.IsPluginLoaded("UltimateBackup"))
+                {
+                    PluginBridge.TryInvoke(
+                        "UltimateBackup",
+                        "UltimateBackup.API.Functions",
+                        "RequestBackupUnit",
+                        _pickupLocation,
+                        "Motor Patrol Escort Assistance Code 2");
+                }
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][VIPEscort] OnCalloutAccepted Exception: " + ex);
-                End();
+                Game.LogTrivial("[WSQ][VIPEscort] OnCalloutAccepted Exception: " + ex);
+                PlayerControlledEnd();
             }
 
             return base.OnCalloutAccepted();
@@ -93,48 +129,66 @@ namespace WhoSaidQuietCallouts.Callouts
         public override void Process()
         {
             base.Process();
-            if (!_sceneActive || _callHandled)
-                return;
+            if (!_sceneActive || _callHandled) return;
 
-            float distance = Game.LocalPlayer.Character.DistanceTo(_pickupLocation);
+            float playerDist = Game.LocalPlayer.Character.DistanceTo(_pickupLocation);
 
-            // Begin escort when near VIP
-            if (!_escortStarted && distance < 30f)
+            // ─── Begin Escort ───
+            if (!_escortStarted && playerDist < 30f)
             {
                 _escortStarted = true;
-                Game.DisplaySubtitle("~b~VIP ready for escort. Follow the vehicle to the destination safely.");
+                Game.DisplaySubtitle("~b~VIP ready for escort — follow them to the destination.", 4000);
                 Functions.PlayScannerAudio("UNITS_BEGIN_ESCORT");
-                _destinationBlip = new Blip(_destination)
-                {
-                    Color = System.Drawing.Color.LightBlue,
-                    Name = "Destination"
-                };
 
-                // Have VIP start driving toward destination
+                // Replace route to destination
+                if (_routeBlip != null && _routeBlip.Exists()) _routeBlip.Delete();
+
+                if (WSQSettings.UseRadarBlipsInsteadOfGPS)
+                {
+                    _destinationBlip = new Blip(_destination, 100f)
+                    {
+                        Color = System.Drawing.Color.Cyan,
+                        Name = "Destination Area",
+                        Alpha = 0.7f
+                    };
+                    Game.DisplayHelp("Radar blip set for VIP destination.");
+                    _routeBlip = _destinationBlip;
+                }
+                else
+                {
+                    Blip gpsDest = new Blip(_destination)
+                    {
+                        Color = System.Drawing.Color.LightBlue,
+                        Name = "GPS Route to Destination"
+                    };
+                    gpsDest.IsRouteEnabled = true;
+                    _routeBlip = gpsDest;
+                    Game.DisplayHelp("GPS route set to the VIP destination.");
+                }
+
                 _vip.Tasks.DriveToPosition(_destination, 25f, VehicleDrivingFlags.Normal);
             }
 
-            // Dynamic event chance en route
-            if (_escortStarted && _vipVehicle && _vipVehicle.Exists() && _vipVehicle.DistanceTo(_destination) < 600f && _attackers.Count == 0)
+            // ─── Potential ambush event ───
+            if (_escortStarted && _vipVehicle != null && _vipVehicle.Exists() &&
+                _vipVehicle.DistanceTo(_destination) < 600f && _attackers.Count == 0)
             {
-                int chance = _rng.Next(0, 100);
-                if (chance > 70) // 30% chance for ambush
-                {
+                if (_rng.Next(0, 100) > 70)
                     StartAmbushEvent();
-                }
             }
 
-            // Escort complete
-            if (_escortStarted && _vipVehicle && _vipVehicle.Exists() && _vipVehicle.DistanceTo(_destination) < 50f)
+            // ─── Arrival — successful completion ───
+            if (_escortStarted && _vipVehicle != null && _vipVehicle.Exists() &&
+                _vipVehicle.DistanceTo(_destination) < 50f)
             {
                 HandleCompletion();
             }
 
-            // Player leaves area fail-safe
+            // ─── Player abandons route ───
             if (Game.LocalPlayer.Character.DistanceTo(_pickupLocation) > 1000f)
             {
-                Game.DisplayHelp("You left the escort route. Dispatch is assigning another unit.");
-                End();
+                Game.DisplayHelp("You left the escort route. Press ~y~END~s~ to close this callout.");
+                PlayerControlledEnd();
             }
         }
 
@@ -142,10 +196,9 @@ namespace WhoSaidQuietCallouts.Callouts
         {
             try
             {
-                Game.LogTrivial("[WSQ][VIPEscort] Ambush triggered!");
+                Game.LogTrivial("[WSQ][VIPEscort] Ambush triggered.");
                 Functions.PlayScannerAudio("SHOTS_FIRED_IN_TRANSIT");
 
-                // Spawn attackers
                 for (int i = 0; i < 3; i++)
                 {
                     Ped attacker = new Ped("G_M_Y_Lost_02", _vipVehicle.GetOffsetPositionFront(20f).Around(5f), _rng.Next(0, 359));
@@ -156,11 +209,19 @@ namespace WhoSaidQuietCallouts.Callouts
                     _attackers.Add(attacker);
                 }
 
-                Game.DisplaySubtitle("~r~Ambush! Protect the VIP!");
+                if (PluginBridge.IsPluginLoaded("StopThePed"))
+                {
+                    PluginBridge.TryInvoke(
+                        "StopThePed",
+                        "StopThePed.API.Functions",
+                        "CalmNearbyPeds");
+                }
+
+                Game.DisplaySubtitle("~r~Ambush! Protect the VIP!", 4000);
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][VIPEscort] StartAmbushEvent Exception: " + ex);
+                Game.LogTrivial("[WSQ][VIPEscort] StartAmbushEvent Exception: " + ex);
             }
         }
 
@@ -169,40 +230,45 @@ namespace WhoSaidQuietCallouts.Callouts
             try
             {
                 _callHandled = true;
-                Functions.PlayScannerAudio("CODE_4_ADAM COPY_THAT VIP_SECURE");
-                Game.DisplaySubtitle("~g~VIP successfully reached the destination. Escort complete.");
+                Functions.PlayScannerAudio("CODE_4_ADAM COPY_THAT VIP_SECURE");
+                Game.DisplaySubtitle("~g~VIP secure. Escort operation complete.", 4000);
+                Game.DisplayHelp("Press ~y~END~s~ when ready to close this callout.");
+                GameFiber.StartNew(delegate
+                {
+                    CalloutUtilities.WaitForPlayerEnd();
+                    PlayerControlledEnd();
+                });
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][VIPEscort] HandleCompletion Exception: " + ex.Message);
+                Game.LogTrivial("[WSQ][VIPEscort] HandleCompletion Exception: " + ex.Message);
             }
-
-            PlayerControlledEnd();
         }
 
         public override void End()
         {
             base.End();
-            Game.LogTrivial("[WSQ][VIPEscort] Cleaning up entities.");
-
+            Game.LogTrivial("[WSQ][VIPEscort] Cleaning up entities.");
             try
             {
-                if (_pickupBlip && _pickupBlip.Exists()) _pickupBlip.Delete();
-                if (_destinationBlip && _destinationBlip.Exists()) _destinationBlip.Delete();
-
-                if (_vip && _vip.Exists()) _vip.Dismiss();
-                if (_vipVehicle && _vipVehicle.Exists()) _vipVehicle.Dismiss();
-
+                if (_pickupBlip != null && _pickupBlip.Exists()) _pickupBlip.Delete();
+                if (_destinationBlip != null && _destinationBlip.Exists()) _destinationBlip.Delete();
+                if (_routeBlip != null && _routeBlip.Exists()) _routeBlip.Delete();
+                if (_vip != null && _vip.Exists()) _vip.Dismiss();
+                if (_vipVehicle != null && _vipVehicle.Exists()) _vipVehicle.Dismiss();
                 foreach (Ped attacker in _attackers)
-                    if (attacker && attacker.Exists()) attacker.Dismiss();
+                {
+                    if (attacker != null && attacker.Exists()) attacker.Dismiss();
+                }
             }
             catch (Exception ex)
             {
-                Game.LogTrivial("[WSQ][VIPEscort] Cleanup Exception: " + ex.Message);
+                Game.LogTrivial("[WSQ][VIPEscort] Cleanup Exception: " + ex.Message);
             }
 
             _sceneActive = false;
-            Game.DisplayNotification("CHAR_POLICE", "CHAR_POLICE", "Dispatch", "Callout Completed", "VIP escort completed successfully.");
+            Game.DisplayNotification("CHAR_POLICE", "CHAR_POLICE", "Dispatch",
+                "Callout Completed", "VIP escort mission completed. Code 4.");
         }
     }
 }
