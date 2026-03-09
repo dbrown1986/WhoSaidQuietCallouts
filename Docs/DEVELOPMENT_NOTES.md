@@ -1,5 +1,5 @@
 # 🧠 Who Said Quiet Callouts – Development Notes  
-**Version:** v1.9.1 (b Revision)  
+**Version:** v0.9.1 Alpha (b Revision)  
 **Date:** March 7 2026  
 **Maintainer:** Who Said Quiet Team · Assisted by Galaxy AI (GPT‑5 Model by OpenAI)
 
@@ -22,11 +22,11 @@ The development goal is to merge **realistic police response behavior**, *
 
 ---
 
-## 🧩 Current Feature Set (v1.9.1)
+## 🧩 Current Feature Set (v0.9.1 Alpha)
 - **21 Callouts** (total including Suicide Attempt).  
 - **Radiant AI Engine:** Behavior states selected by weighted random generator.  
 - **Integration Harmony:** 9 supported LSPDFR plugins with conflict detection.  
-- **Manual Callout Menu:** Callout Interface API integration (v1.9.0+).  
+- **Manual Callout Menu:** Callout Interface API integration (v0.9.0+).  
 - **Variable Cooldown System:** Randomized delays (30 – 300 s).  
 - **XML Doc Summaries:** IntelliSense documentation throughout codebase.  
 - **QA Validation:** Memory leak and overflow free status verified.  
@@ -110,7 +110,7 @@ All future sensitive scenarios must include a similar player c
 ---
 
 ## 🧾 Developer Contacts
-- **Project Lead:** Who Said Quiet Team (Lead Scripter / Coordinator)  
+- **dbrown1986:** Who Said Quiet Team (Lead Scripter / Coordinator)  
 - **AI Assistant:** Galaxy AI ( GPT‑5 Model by OpenAI )  
 - **Testing Coordinator:** Community Beta Group v2026  
 
