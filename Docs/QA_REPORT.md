@@ -1,5 +1,5 @@
 # 🧪 Who Said Quiet Callouts – Quality Assurance Report  
-**Build Version:** v1.9.1 (Maintenance & Documentation Cleanup Build)  
+**Build Version:** v0.9.1 Alpha (Maintenance & Documentation Cleanup Build)  
 **Date Completed:** March 7 2026  
 **Reviewer:** Who Said Quiet Team · Assisted by Galaxy AI (GPT‑5 Model)  
 
@@ -14,7 +14,7 @@ Results are based on manual gameplay tests in LSPDFR 0.4.9 (RAGE Plugin�
 ## 🧩 Test Build Summary
 | Item | Detail |
 |:--|:--|
-| **Build Tag** | `IntegrationHarmony 1.9.1` (Maintenance & Cleanup Revision) |
+| **Build Tag** | `IntegrationHarmony 0.9.1` (Maintenance & Cleanup Revision) |
 | **Project Language** | C# /.NET Framework 4.8 |
 | **Compile Environment** | Microsoft Visual Studio 2022 CE |
 | **Game Environment** | GTA V v1.0.2845.0 – LSPDFR 0.4.9 |
@@ -29,14 +29,14 @@ Results are based on manual gameplay tests in LSPDFR 0.4.9 (RAGE Plugin�
 |:--|:--|:--:|:--|
 | **Core Callouts** | 21 total (Armed Robbery → Suicide Attempt) | ✅ | All scenarios spawn and clean properly. |
 | **Radiant AI System** | Compliant/Flee/Hostile switch logic | ✅ | Random seed balanced; No looping tasks. |
-| **Entity Cleanup** | Peds, vehicles, props dismissed properly | ✅ | Added redundant `try { sceneBlip.Delete(); }` check in v1.9.1. |
+| **Entity Cleanup** | Peds, vehicles, props dismissed properly | ✅ | Added redundant `try { sceneBlip.Delete(); }` check in v0.9.1. |
 | **Logging System** | WSQLogger (LogLevel 0–3) | ✅ | Clean log rotation; no unhandled logs. |
 | **INI Parser** | Auto‑create + default writes | ✅ | All keys generate successfully. |
 | **Conflict Detection** | STP/UB ↔ Policing Redefined check | ✅ | Properly disables conflicts on runtime. |
 | **Integration Wrappers** | 9 modules verified | ✅ | Respond as expected when plugin enabled true. |
 | **Memory Usage** | Peak runtime usage | ✅ ~590 MB | Stable; no creep over time. |
 | **Frame Rate Impact** | Average FPS difference | ✅ – 2–4 FPS | Acceptable for LSPDFR script addon. |
-| **Callout Interface Menu** | Manual launch functionality (v1.9+) | ✅ | All callouts show category “WSQ”. |
+| **Callout Interface Menu** | Manual launch functionality (v0.9+) | ✅ | All callouts show category “WSQ”. |
 | **XML Doc Summaries** | IntelliSense availability | ✅ | Complete across source files. |
 
 ---
@@ -55,7 +55,7 @@ Results are based on manual gameplay tests in LSPDFR 0.4.9 (RAGE Plugin�
 ## 🪶 Known Minor Issues (Non‑Blocking)
 | Issue | Status | Priority |
 |:--|:--|:--:|
-| Blip delete error if object removed mid‑scene | Handled (v1.9.1 try/catch redundancy) | Low |
+| Blip delete error if object removed mid‑scene | Handled (v0.9.1 try/catch redundancy) | Low |
 | Empty catch blocks in legacy Integrations | Rewritten with Logger.Warn() calls – OK | Low |
 | Occasional Grammar Police line overlap during multi‑scene | API limitation | Low |
 
