@@ -1,3 +1,5 @@
+![Windows Build](https://github.com/dbrown1986/WhoSaidQuietCallouts/actions/workflows/windows-build.yml/badge.svg?branch=main)<br>
+
 # ⚠️ Content Advisory – Suicide Attempt Callout  
 
 This mod pack includes one optional callout titled **“Suicide Attempt”**, which portrays a scenario involving self‑harm and crisis intervention.  
@@ -10,7 +12,6 @@ If you or someone you know struggles with thoughts of suicide or self‑harm, **
 
 ---
 
-![Windows Build](https://github.com/dbrown1986/WhoSaidQuietCallouts/actions/workflows/dotnet.yml/badge.svg?branch=main)<br>
 This plugin is in early development at the moment, not ready for production.<br>
 Please keep an eye on this badge for status.
 
