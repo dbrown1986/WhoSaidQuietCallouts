@@ -4,7 +4,7 @@
 
 ---
 
-## 🧱 v1.0.0 – Project Foundation (Initial Release)
+## 🧱 v0.1.0 Alpha – Project Foundation (Initial Release)
 **Status:** Released · Framework Built · Core Architecture Complete
 
 ### Highlights
@@ -17,7 +17,7 @@
 
 ---
 
-## 🧩 v1.1.0 – Radiant AI Behavior System
+## 🧩 v0.1.5 Alpha – Radiant AI Behavior System
 **Status:** Internal Update · Enhanced Immersion
 
 ### Additions
@@ -28,7 +28,7 @@
 
 ---
 
-## 🧠 v1.2.0 – Narrative Enhancement & Character Variety
+## 🧠 v0.2.0 Alpha – Narrative Enhancement & Character Variety
 **Status:** Major Expansion
 
 ### New Features
@@ -39,7 +39,7 @@
 
 ---
 
-## ⚙️ v1.3.0 – Stability & Safe Cleanup Framework
+## ⚙️ v0.3.0 Alpha – Stability & Safe Cleanup Framework
 **Status:** Production Patch
 
 ### Improvements
@@ -50,7 +50,7 @@
 
 ---
 
-## 🔧 v1.4.0 – Advanced Logging and INI Upgrades
+## 🔧 v0.4.0 Alpha – Advanced Logging and INI Upgrades
 **Status:** Feature Upgrade
 
 ### Features
@@ -61,7 +61,7 @@
 
 ---
 
-## 🔌 v1.5.0 – Integration Harmony Build
+## 🔌 v0.5.0 Alpha – Integration Harmony Build
 **Status:** Major Refactor · Cross‑Mod Compatibility Version
 
 ### Highlights
@@ -74,7 +74,7 @@
 
 ---
 
-## ⏱ v1.6.0 – Variable Dispatch Cooldown Build
+## ⏱ v0.6.0 Alpha – Variable Dispatch Cooldown Build
 **Status:** Stable
 
 ### Additions
@@ -86,7 +86,7 @@
 
 ---
 
-## 🧩 v1.7.0 – Callout Toggle Return & Configuration Layout Final
+## 🧩 v0.7.0 Alpha – Callout Toggle Return & Configuration Layout Final
 **Status:** Configuration Overhaul
 
 ### Changes
@@ -98,7 +98,7 @@
 
 ---
 
-## 🌆 v1.8.0 – Community Safety Expansion Build
+## 🌆 v0.8.0 Alpha – Community Safety Expansion Build
 **Status:** Expansion Release
 
 ### Additions
@@ -111,7 +111,7 @@
 
 ---
 
-## 🧭 v1.9.0 – Callout Interface Menu Integration Build
+## 🧭 v0.9.0 Alpha – Callout Interface Menu Integration Build
 **Status:** Feature Upgrade
 
 ### Features
@@ -122,7 +122,7 @@
 
 ---
 
-## 🧱 v1.9.1 – Maintenance & Documentation Cleanup Build (03/07/2026)
+## 🧱 v0.9.1 Alpha – Maintenance & Documentation Cleanup Build (03/07/2026)
 **Status:** Current Master · Stable Release  
 
 ### Fixes & Improvements
