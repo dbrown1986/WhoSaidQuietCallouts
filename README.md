@@ -103,7 +103,7 @@ Each dispatch is built as a storyline: AI actors respond, ad
 1. Clone or download this repository.  
 2. Open `WhoSaidQuietCallouts.sln` in Visual Studio.  
 3. Ensure reference DLLs are present:  
- • `RagePluginHook.dll` • `LSPD_First_Response.dll`
+ • `RagePluginHook.dll` • `LSPD_First_Response.dll`<br>
  4. Build ( `Ctrl + Shift + B` ).  
 5. Copy output files:  
  `WhoSaidQuietCallouts.dll` and `WhoSaidQuietCallouts.ini` → `Grand Theft Auto V/Plugins/LSPDFR`.  
