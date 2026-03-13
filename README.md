@@ -12,8 +12,10 @@ If you or someone you know struggles with thoughts of suicide or self‑harm, **
 
 ---
 
+# :lady_beetle: Early Access Content.
 This plugin is in early development at the moment, not ready for production.<br>
-Please keep an eye on this badge for build status and stability.
+Please feel free to post in the issues section any bugs you are experiencing.
+I will endeavor to work up a template for bug reports that would help when submitting.
 
 ---
 
